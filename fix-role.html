@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix User Role - The Pizza Club and Grill</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #D90429;
+            margin-bottom: 1rem;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #2196F3;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background: #D90429;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #b8032a;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fix User Role</h1>
+        
+        <div class="info">
+            <strong>Instructions:</strong><br>
+            1. Enter the email address: <code>pcg001@gmail.com</code><br>
+            2. Select the role: <strong>supervisor</strong><br>
+            3. Click "Update Role"<br>
+            4. After successful update, try logging in again.
+        </div>
+
+        <form id="roleForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" value="pcg001@gmail.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select id="role" required>
+                    <option value="">Select a role</option>
+                    <option value="admin">Admin</option>
+                    <option value="supervisor" selected>Supervisor</option>
+                    <option value="cashier">Cashier</option>
+                    <option value="customer">Customer</option>
+                </select>
+            </div>
+
+            <button type="submit">Update Role</button>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script type="module">
+        import { auth, database } from './js/firebase.js';
+        
+        window.auth = auth;
+        window.database = database;
+    </script>
+
+    <script>
+        document.getElementById('roleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const role = document.getElementById('role').value;
+            const messageDiv = document.getElementById('message');
+            
+            try {
+                // Search for user by email
+                const usersRef = database.ref('users');
+                const snapshot = await usersRef.orderByChild('email').equalTo(email).once('value');
+                
+                if (!snapshot.exists()) {
+                    throw new Error('User not found with this email address.');
+                }
+                
+                // Update the user's role
+                let updated = false;
+                snapshot.forEach((childSnapshot) => {
+                    const userId = childSnapshot.key;
+                    database.ref('users/' + userId).update({
+                        role: role,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    updated = true;
+                });
+                
+                if (updated) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = `✓ Role updated successfully! User ${email} is now a ${role}. You can now login with this account.`;
+                    messageDiv.style.display = 'block';
+                } else {
+                    throw new Error('Failed to update role.');
+                }
+                
+            } catch (error) {
+                console.error('Error updating role:', error);
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '✗ Error: ' + error.message;
+                messageDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

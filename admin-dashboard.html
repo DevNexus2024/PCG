@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor/Cashier Dashboard - The Pizza Club and Grill</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="images/images_(1).jpeg" alt="The Pizza Club and Grill Logo" class="brand-logo">
+                <span>THE PIZZA CLUB AND GRILL</span>
+            </div>
+            <div class="nav-admin-actions">
+                <button class="notification-bell" onclick="toggleNotifications()" id="notificationBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-count" id="notificationCount" style="display: none;">0</span>
+                </button>
+                <span class="admin-user">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="adminName">Admin</span>
+                </span>
+                <button class="btn btn-outline" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notificationPanel">
+        <div class="notification-header">
+            <h3><i class="fas fa-bell"></i> Notifications</h3>
+            <div class="notification-actions">
+                <button class="btn-text" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double"></i> Mark all as read
+                </button>
+                <button class="close-notifications" onclick="toggleNotifications()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <div class="empty-notifications">
+                <i class="fas fa-bell-slash"></i>
+                <p>No notifications</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-tachometer-alt"></i> Dashboard</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active">
+                    <a href="#overview">
+                        <i class="fas fa-home"></i>
+                        <span>Overview</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="manage-orders.html">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Orders</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="manage-menu-items.html">
+                        <i class="fas fa-utensils"></i>
+                        <span>Menu Items</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="manage-categories.html">
+                        <i class="fas fa-th-large"></i>
+                        <span>Categories</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#customers">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <h1>Supervisor/Cashier Dashboard</h1>
+                <p>Welcome back! Here's what's happening today.</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalOrders">0</h3>
+                        <p>Total Orders</p>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 12% from last month
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-success">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalCategories">0</h3>
+                        <p>Total Categories</p>
+                        <span class="stat-change">
+                            <i class="fas fa-minus"></i> No change
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-warning">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalMenuItems">0</h3>
+                        <p>Menu Items Available</p>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 3 new items
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-info">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalRevenue">E0</h3>
+                        <p>Total Revenue</p>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 8% from last month
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Tables Section -->
+            <div class="dashboard-grid">
+                <!-- Recent Orders -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-shopping-cart"></i> Recent Orders</h3>
+                        <a href="manage-orders.html" class="view-all">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table" id="recentOrdersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading orders...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Menu Items -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-utensils"></i> Menu Items</h3>
+                        <button class="btn btn-primary btn-small" onclick="window.location.href='manage-menu-items.html'">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table" id="menuItemsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="menuItemsTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Loading menu items...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-th-large"></i> Categories</h3>
+                        <button class="btn btn-primary btn-small" onclick="window.location.href='manage-categories.html'">
+                            <i class="fas fa-plus"></i> Add Category
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="categories-grid" id="categoriesGrid">
+                            <p class="text-center">Loading categories...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> Quick Stats</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-stats">
+                            <div class="quick-stat-item">
+                                <span class="stat-label">Today's Orders</span>
+                                <span class="stat-value" id="todayOrders">0</span>
+                            </div>
+                            <div class="quick-stat-item">
+                                <span class="stat-label">Pending Orders</span>
+                                <span class="stat-value" id="pendingOrders">0</span>
+                            </div>
+                            <div class="quick-stat-item">
+                                <span class="stat-label">Completed Orders</span>
+                                <span class="stat-value" id="completedOrders">0</span>
+                            </div>
+                            <div class="quick-stat-item">
+                                <span class="stat-label">Total Customers</span>
+                                <span class="stat-value" id="totalCustomers">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>
