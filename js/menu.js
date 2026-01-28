@@ -299,10 +299,16 @@ function displayMenuItems(items) {
                 <p class="item-description">${item.description || 'Delicious food item'}</p>
                 <div class="item-footer">
                     <span class="item-price">E${parseFloat(item.price).toFixed(2)}</span>
-                    <button class="add-to-cart-btn" onclick="addToCart('${item.id}')" 
-                        ${!available ? 'disabled' : ''}>
-                        <i class="fas fa-plus"></i> Add to Cart
-                    </button>
+                    <div class="item-actions">
+                        <button class="add-to-cart-btn" onclick="addToCart('${item.id}')" 
+                            ${!available ? 'disabled' : ''}>
+                            <i class="fas fa-plus"></i> Add to Cart
+                        </button>
+                        <button class="order-now-btn" onclick="orderNow('${item.id}')" 
+                            ${!available ? 'disabled' : ''}>
+                            <i class="fas fa-shopping-cart"></i> Order Now
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -351,6 +357,37 @@ window.addToCart = function(itemId) {
     saveCart();
     updateCartUI();
     showInPageNotification('Item added to cart!');
+}
+
+// Order now - add to cart and go to delivery page
+window.orderNow = function(itemId) {
+    const item = menuItems.find(i => i.id === itemId);
+    if (!item) return;
+    
+    // Check if item is available
+    const available = (item.status === 'active' || !item.status) && item.available !== false;
+    if (!available) {
+        showInPageNotification('This item is currently out of stock');
+        return;
+    }
+    
+    const existingItem = cart.find(i => i.id === itemId);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: 1,
+            imageUrl: item.imageUrl
+        });
+    }
+    
+    saveCart();
+    
+    // Redirect to delivery page
+    window.location.href = 'delivery.html';
 }
 
 // Remove from cart

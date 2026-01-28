@@ -18,7 +18,7 @@
             <ul class="nav-menu">
                 <li><a href="#home" class="active">Home</a></li>
                 <li><a href="#about">About</a></li>
-                <li><a href="#menu">Menu</a></li>
+                <li><a href="#" id="menuNavLink">Menu</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
             <div class="nav-buttons">
@@ -112,61 +112,6 @@
                 <div class="about-image">
                     <img src="images/FB_IMG_1766516886242.jpg" alt="Delicious Pizza">
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Popular Items Preview -->
-    <section class="popular-items">
-        <div class="container">
-            <h2 class="section-title">Popular Items</h2>
-            <p class="section-subtitle">Customer favorites you'll love</p>
-            <div class="items-grid">
-                <div class="item-card">
-                    <div class="item-image">
-                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" alt="Margherita Pizza">
-                        <div class="item-badge">Popular</div>
-                    </div>
-                    <div class="item-content">
-                        <h3>Margherita Pizza</h3>
-                        <p>Classic tomato, mozzarella, and fresh basil</p>
-                        <div class="item-footer">
-                            <span class="item-price">$12.99</span>
-                            <button class="btn btn-small btn-primary">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="item-card">
-                    <div class="item-image">
-                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" alt="BBQ Chicken">
-                        <div class="item-badge">Popular</div>
-                    </div>
-                    <div class="item-content">
-                        <h3>BBQ Chicken Pizza</h3>
-                        <p>Grilled chicken, BBQ sauce, red onions, and cheese</p>
-                        <div class="item-footer">
-                            <span class="item-price">$15.99</span>
-                            <button class="btn btn-small btn-primary">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="item-card">
-                    <div class="item-image">
-                        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400" alt="Grilled Steak">
-                        <div class="item-badge">Chef's Special</div>
-                    </div>
-                    <div class="item-content">
-                        <h3>Grilled Ribeye Steak</h3>
-                        <p>Premium ribeye with seasonal vegetables</p>
-                        <div class="item-footer">
-                            <span class="item-price">$24.99</span>
-                            <button class="btn btn-small btn-primary">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center">
-                <button class="btn btn-primary" id="viewFullMenuBtn">View Full Menu</button>
             </div>
         </div>
     </section>
@@ -267,11 +212,60 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="js/firebase.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/menu.js"></script>
-    <script src="js/order.js"></script>
     <script>
+        // Wait for DOM and Firebase to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Order Now button - check authentication
+            const orderNowBtn = document.getElementById('orderNowBtn');
+            if (orderNowBtn) {
+                orderNowBtn.addEventListener('click', function() {
+                    const user = firebase.auth().currentUser;
+                    if (user) {
+                        // User is logged in, redirect to menu
+                        window.location.href = 'menu.html';
+                    } else {
+                        // User is not logged in, redirect to login with return URL
+                        window.location.href = 'login.html?returnUrl=menu.html';
+                    }
+                });
+            }
+
+            // View Menu button - check authentication
+            const viewMenuBtn = document.getElementById('viewMenuBtn');
+            if (viewMenuBtn) {
+                viewMenuBtn.addEventListener('click', function() {
+                    const user = firebase.auth().currentUser;
+                    if (user) {
+                        // User is logged in, redirect to menu
+                        window.location.href = 'menu.html';
+                    } else {
+                        // User is not logged in, redirect to login with return URL
+                        window.location.href = 'login.html?returnUrl=menu.html';
+                    }
+                });
+            }
+
+            // Menu navigation link - check authentication
+            const menuNavLink = document.getElementById('menuNavLink');
+            if (menuNavLink) {
+                menuNavLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const user = firebase.auth().currentUser;
+                    if (user) {
+                        // User is logged in, redirect to menu
+                        window.location.href = 'menu.html';
+                    } else {
+                        // User is not logged in, redirect to login with return URL
+                        window.location.href = 'login.html?returnUrl=menu.html';
+                    }
+                });
+            }
+        });
+
         // Mobile menu toggle
         const hamburger = document.querySelector('.hamburger');
         const navMenu = document.querySelector('.nav-menu');

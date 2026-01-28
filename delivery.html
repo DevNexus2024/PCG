@@ -183,6 +183,24 @@
             cursor: not-allowed;
         }
 
+        .btn-back-to-menu {
+            width: 100%;
+            padding: 1rem;
+            background: #4169E1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.3s ease;
+        }
+
+        .btn-back-to-menu:hover {
+            background: #315ac1;
+        }
+
         .empty-cart {
             text-align: center;
             padding: 3rem;
@@ -211,14 +229,7 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">
-                <img src="images/logo.png" alt="The Pizza Club and Grill">
-                <span>THE PIZZA CLUB AND GRILL</span>
-            </a>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="menu.html">Menu</a>
-            </div>
+            <h1 style="color: white; font-size: 1.5rem; margin: 0;">DELIVERY DETAILS</h1>
         </div>
     </nav>
 
@@ -302,8 +313,11 @@
                     <span id="grandTotal">E0.00</span>
                 </div>
             </div>
-            <button class="btn-place-order" onclick="placeOrder()">
-                <i class="fas fa-check-circle"></i> Place Order
+            <button class="btn-place-order" onclick="goToPayment()">
+                <i class="fas fa-credit-card"></i> Go to Payment
+            </button>
+            <button class="btn-back-to-menu" onclick="window.location.href='menu.html'">
+                <i class="fas fa-arrow-left"></i> Back to Menu
             </button>
         </div>
     </div>

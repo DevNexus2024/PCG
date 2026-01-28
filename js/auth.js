@@ -175,7 +175,14 @@ async function handleLogin(e) {
         // Determine redirect based on role
         let redirectUrl = 'menu.html'; // Default for customers
         
-        if (userData.role === 'accountant') {
+        // Check if there's a returnUrl parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('returnUrl');
+        
+        if (returnUrl) {
+            // If returnUrl is provided, use it (for any user)
+            redirectUrl = returnUrl;
+        } else if (userData.role === 'accountant') {
             redirectUrl = 'accountant-dashboard.html';
         } else if (userData.role === 'admin' || userData.role === 'supervisor' || userData.role === 'cashier') {
             redirectUrl = 'admin-dashboard.html';

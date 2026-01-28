@@ -108,8 +108,8 @@ function updateTotals() {
     document.getElementById('grandTotal').textContent = `E${total.toFixed(2)}`;
 }
 
-// Place order
-window.placeOrder = async function() {
+// Go to payment page
+window.goToPayment = function() {
     const form = document.getElementById('orderForm');
     
     // Validate form
@@ -149,7 +149,7 @@ window.placeOrder = async function() {
     const deliveryFee = orderType === 'delivery' ? DELIVERY_FEE : 0;
     const total = subtotal + deliveryFee;
     
-    // Prepare order data
+    // Save order data to localStorage for payment page
     const orderData = {
         orderType: orderType,
         customerInfo: {
@@ -169,46 +169,12 @@ window.placeOrder = async function() {
             deliveryFee: deliveryFee,
             total: total
         },
-        orderNotes: orderNotes,
-        status: 'pending',
-        paymentStatus: orderType === 'pickup' ? 'pay_on_pickup' : 'pending',
-        createdAt: firebase.database.ServerValue.TIMESTAMP,
-        updatedAt: firebase.database.ServerValue.TIMESTAMP
+        orderNotes: orderNotes
     };
     
-    try {
-        // Disable button
-        const btn = document.querySelector('.btn-place-order');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing order...';
-        
-        // Save order to Firebase
-        const orderRef = await database.ref('orders').push(orderData);
-        const orderId = orderRef.key;
-        
-        // Clear cart
-        localStorage.removeItem('cart');
-        
-        // Send notification to user if logged in
-        if (currentUser) {
-            await database.ref(`notifications/${currentUser.uid}`).push({
-                title: 'Order Placed Successfully',
-                message: `Your order #${orderId.substring(0, 8)} has been placed and is being processed.`,
-                orderId: orderId,
-                read: false,
-                timestamp: Date.now()
-            });
-        }
-        
-        // Redirect to success page or show success message
-        alert(`Order placed successfully! Order ID: ${orderId.substring(0, 8)}\n\n${orderType === 'pickup' ? 'You can pick up and pay at the restaurant.' : 'Your order will be delivered soon.'}`);
-        window.location.href = 'menu.html';
-        
-    } catch (error) {
-        console.error('Error placing order:', error);
-        alert('Failed to place order. Please try again.');
-        const btn = document.querySelector('.btn-place-order');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
-    }
+    // Save to localStorage
+    localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+    
+    // Redirect to payment page
+    window.location.href = 'payment.html';
 }
