@@ -1,11 +1,37 @@
 {
-  "users": {},
-  "categories": {},
-  "menuItems": {},
-  "orders": {},
+  "categories": {
+    "-O1A2B3C4D5E6F7G8H9I": {
+      "description": "Handcrafted pizzas with fresh ingredients",
+      "fields": ["Size", "Extras", "Flavour"],
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/food-ordering-website-2025.appspot.com/o/categories%2F1768940772178_4952486.png?alt=media",
+      "name": "Pizza",
+      "status": "active",
+      "updatedAt": 1737969722000
+    }
+  },
+  "menuItems": {
+    "-O1J2K3L4M5N6O7P8Q9R": {
+      "category": "-O1A2B3C4D5E6F7G8H9I",
+      "description": "Pepperoni,Ground Beef,BBQ Sauce,Peppers",
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/food-ordering-website-2025.appspot.com/o/menuItems%2F1768941448371_FB_IMG_1766516886242.jpg?alt=media",
+      "name": "Something Meaty",
+      "price": 153,
+      "status": "active",
+      "updatedAt": 1737970448000
+    }
+  },
+  "users": {
+    "zqJl1zFluleZibHepzPuAYEvDbo1": {
+      "createdAt": "2026-01-26T14:30:00.000Z",
+      "email": "pcg001@gmail.com",
+      "name": "pcg001",
+      "role": "admin"
+    }
+  },
   "carts": {},
-  "payments": {},
-  "feedback": {},
   "discounts": {},
-  "notifications": {}
+  "feedback": {},
+  "notifications": {},
+  "orders": {},
+  "payments": {}
 }

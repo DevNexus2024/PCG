@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - The Pizza Club and Grill</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 100px auto 50px;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .checkout-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .checkout-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .order-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .order-type-option {
+            padding: 1.5rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .order-type-option:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .order-type-option.active {
+            border-color: var(--primary-color);
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .order-type-option i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .order-type-option h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-type-option p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .delivery-fields {
+            display: none;
+        }
+
+        .delivery-fields.active {
+            display: block;
+        }
+
+        .order-summary {
+            position: sticky;
+            top: 100px;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .order-item-details {
+            flex: 1;
+        }
+
+        .order-item-details h4 {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .order-item-price {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .order-totals {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #eee;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+
+        .total-row.grand-total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #eee;
+        }
+
+        .btn-place-order {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .btn-place-order:hover {
+            background: #c82333;
+        }
+
+        .btn-place-order:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .empty-cart i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+                margin-top: 80px;
+            }
+
+            .order-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="images/logo.png" alt="The Pizza Club and Grill">
+                <span>THE PIZZA CLUB AND GRILL</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="menu.html">Menu</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Checkout Container -->
+    <div class="checkout-container" id="checkoutContainer">
+        <!-- Order Details Section -->
+        <div class="checkout-section">
+            <h2><i class="fas fa-clipboard-list"></i> Order Details</h2>
+            
+            <!-- Order Type Selector -->
+            <div class="order-type-selector">
+                <div class="order-type-option active" data-type="pickup" onclick="selectOrderType('pickup')">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>Pickup (Cashout)</h3>
+                    <p>Order now, pay later at restaurant</p>
+                </div>
+                <div class="order-type-option" data-type="delivery" onclick="selectOrderType('delivery')">
+                    <i class="fas fa-truck"></i>
+                    <h3>Delivery</h3>
+                    <p>Get it delivered to your location</p>
+                </div>
+            </div>
+
+            <!-- Customer Information -->
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="customerName"><i class="fas fa-user"></i> Full Name *</label>
+                    <input type="text" id="customerName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="customerPhone"><i class="fas fa-phone"></i> Phone Number *</label>
+                    <input type="tel" id="customerPhone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="customerEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="customerEmail">
+                </div>
+
+                <!-- Delivery Fields (Hidden by default) -->
+                <div class="delivery-fields" id="deliveryFields">
+                    <div class="form-group">
+                        <label for="deliveryAddress"><i class="fas fa-map-marker-alt"></i> Delivery Address *</label>
+                        <textarea id="deliveryAddress" placeholder="Enter your full delivery address"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryCity"><i class="fas fa-city"></i> City *</label>
+                        <input type="text" id="deliveryCity">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryZone"><i class="fas fa-map"></i> Zone/Area</label>
+                        <input type="text" id="deliveryZone" placeholder="e.g., Mbabane, Manzini">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="orderNotes"><i class="fas fa-sticky-note"></i> Order Notes (Optional)</label>
+                    <textarea id="orderNotes" placeholder="Any special instructions or requests"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Order Summary Section -->
+        <div class="checkout-section order-summary">
+            <h2><i class="fas fa-receipt"></i> Order Summary</h2>
+            <div id="orderItems"></div>
+            <div class="order-totals">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">E0.00</span>
+                </div>
+                <div class="total-row" id="deliveryFeeRow" style="display: none;">
+                    <span>Delivery Fee:</span>
+                    <span id="deliveryFee">E20.00</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total:</span>
+                    <span id="grandTotal">E0.00</span>
+                </div>
+            </div>
+            <button class="btn-place-order" onclick="placeOrder()">
+                <i class="fas fa-check-circle"></i> Place Order
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/delivery.js"></script>
+</body>
+</html>

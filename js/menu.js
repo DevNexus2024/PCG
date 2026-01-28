@@ -1,12 +1,14 @@
 // Menu functionality
 let currentCategory = 'all';
 let menuItems = [];
+let categories = {};
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let currentUser = null;
 let notifications = [];
 
 // Initialize menu
 document.addEventListener('DOMContentLoaded', () => {
+    loadCategories();
     loadMenuItems();
     setupCategoryFilters();
     setupCartToggle();
@@ -196,12 +198,47 @@ if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
 }
 
+// Load categories from Firebase
+function loadCategories() {
+    const categoriesRef = database.ref('categories');
+    
+    categoriesRef.on('value', (snapshot) => {
+        categories = {};
+        const categoryFilter = document.querySelector('.category-filter');
+        
+        // Start with "All Items" button
+        let filterHTML = '<button class="filter-btn active" data-category="all">All Items</button>';
+        
+        if (snapshot.exists()) {
+            snapshot.forEach((childSnapshot) => {
+                const category = childSnapshot.val();
+                const categoryId = childSnapshot.key;
+                
+                if (category.status === 'active') {
+                    categories[categoryId] = category.name;
+                    // Add filter button with category ID
+                    filterHTML += `<button class="filter-btn" data-category="${categoryId}">${category.name}</button>`;
+                }
+            });
+        }
+        
+        // Update the category filter buttons
+        if (categoryFilter) {
+            categoryFilter.innerHTML = filterHTML;
+            setupCategoryFilters(); // Re-setup event listeners
+        }
+    });
+}
+
 // Load menu items from Firebase
 function loadMenuItems() {
-    const menuRef = ref(database, 'menuItems');
-    onValue(menuRef, (snapshot) => {
+    const menuRef = database.ref('menuItems');
+    
+    menuRef.on('value', (snapshot) => {
         menuItems = [];
-        const menuGrid = document.getElementById('menu-grid');
+        const menuGrid = document.getElementById('menuGrid');
+        
+        console.log('Loading menu items...', snapshot.exists());
         
         if (snapshot.exists()) {
             snapshot.forEach((childSnapshot) => {
@@ -209,8 +246,11 @@ function loadMenuItems() {
                     id: childSnapshot.key,
                     ...childSnapshot.val()
                 };
+                console.log('Menu item loaded:', item);
+                // Add all items regardless of status for now
                 menuItems.push(item);
             });
+            console.log('Total items loaded:', menuItems.length);
             displayMenuItems(menuItems);
         } else {
             menuGrid.innerHTML = '<p class="loading-text">No menu items available</p>';
@@ -220,40 +260,54 @@ function loadMenuItems() {
 
 // Display menu items
 function displayMenuItems(items) {
-    const menuGrid = document.getElementById('menu-grid');
+    const menuGrid = document.getElementById('menuGrid');
+    
+    console.log('displayMenuItems called with items:', items);
+    console.log('Current category:', currentCategory);
+    console.log('Categories loaded:', categories);
     
     // Filter by category
     const filteredItems = currentCategory === 'all' 
         ? items 
-        : items.filter(item => item.category.toLowerCase() === currentCategory.toLowerCase());
+        : items.filter(item => item.category === currentCategory);
+    
+    console.log('Filtered items:', filteredItems);
     
     if (filteredItems.length === 0) {
         menuGrid.innerHTML = '<p class="loading-text">No items in this category</p>';
         return;
     }
     
-    menuGrid.innerHTML = filteredItems.map(item => `
+    menuGrid.innerHTML = filteredItems.map(item => {
+        const categoryName = categories[item.category] || 'Uncategorized';
+        // Item is available if status is 'active' OR if status is not set, AND available is not explicitly false
+        const available = (item.status === 'active' || !item.status) && item.available !== false;
+        
+        console.log(`Item ${item.name}: status=${item.status}, available field=${item.available}, final available=${available}`);
+        
+        return `
         <div class="menu-item-card" data-id="${item.id}">
             <div class="item-image">
                 <img src="${item.imageUrl || './images/placeholder.jpg'}" alt="${item.name}">
-                ${!item.available ? '<div class="out-of-stock">Out of Stock</div>' : ''}
+                ${!available ? '<div class="out-of-stock">Out of Stock</div>' : ''}
             </div>
             <div class="item-content">
                 <div class="item-header">
                     <h3>${item.name}</h3>
-                    <span class="item-category">${item.category}</span>
+                    <span class="item-category">${categoryName}</span>
                 </div>
                 <p class="item-description">${item.description || 'Delicious food item'}</p>
                 <div class="item-footer">
-                    <span class="item-price">R${parseFloat(item.price).toFixed(2)}</span>
+                    <span class="item-price">E${parseFloat(item.price).toFixed(2)}</span>
                     <button class="add-to-cart-btn" onclick="addToCart('${item.id}')" 
-                        ${!item.available ? 'disabled' : ''}>
+                        ${!available ? 'disabled' : ''}>
                         <i class="fas fa-plus"></i> Add to Cart
                     </button>
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Setup category filters
@@ -272,7 +326,14 @@ function setupCategoryFilters() {
 // Add to cart
 window.addToCart = function(itemId) {
     const item = menuItems.find(i => i.id === itemId);
-    if (!item || !item.available) return;
+    if (!item) return;
+    
+    // Check if item is available
+    const available = (item.status === 'active' || !item.status) && item.available !== false;
+    if (!available) {
+        showInPageNotification('This item is currently out of stock');
+        return;
+    }
     
     const existingItem = cart.find(i => i.id === itemId);
     if (existingItem) {
@@ -289,7 +350,7 @@ window.addToCart = function(itemId) {
     
     saveCart();
     updateCartUI();
-    showNotification('Item added to cart!');
+    showInPageNotification('Item added to cart!');
 }
 
 // Remove from cart
@@ -320,27 +381,27 @@ function saveCart() {
 
 // Update cart UI
 function updateCartUI() {
-    const cartItemsContainer = document.getElementById('cart-items');
-    const cartCount = document.getElementById('cart-count');
-    const cartTotal = document.getElementById('cart-total');
-    const checkoutBtn = document.getElementById('checkout-btn');
+    const cartItemsContainer = document.getElementById('cartItems');
+    const cartCount = document.querySelectorAll('.cart-count');
+    const cartTotal = document.getElementById('cartTotal');
     
-    // Update cart count
+    // Update cart count badges
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCount.textContent = totalItems;
-    cartCount.style.display = totalItems > 0 ? 'inline-flex' : 'none';
+    cartCount.forEach(badge => {
+        badge.textContent = totalItems;
+        badge.style.display = totalItems > 0 ? 'flex' : 'none';
+    });
     
     // Update cart items
     if (cart.length === 0) {
         cartItemsContainer.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
-        checkoutBtn.disabled = true;
     } else {
         cartItemsContainer.innerHTML = cart.map(item => `
             <div class="cart-item">
                 <img src="${item.imageUrl || './images/placeholder.jpg'}" alt="${item.name}">
                 <div class="cart-item-info">
                     <h4>${item.name}</h4>
-                    <p class="cart-item-price">R${parseFloat(item.price).toFixed(2)}</p>
+                    <p class="cart-item-price">E${parseFloat(item.price).toFixed(2)}</p>
                 </div>
                 <div class="cart-item-controls">
                     <button onclick="updateQuantity('${item.id}', -1)">
@@ -356,37 +417,38 @@ function updateCartUI() {
                 </button>
             </div>
         `).join('');
-        checkoutBtn.disabled = false;
     }
     
     // Update total
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    cartTotal.textContent = `R${total.toFixed(2)}`;
+    cartTotal.textContent = `E${total.toFixed(2)}`;
+}
+
+// Toggle cart sidebar
+window.toggleCart = function() {
+    const cartSidebar = document.getElementById('cartSidebar');
+    cartSidebar.classList.toggle('active');
 }
 
 // Setup cart toggle
 function setupCartToggle() {
-    const cartToggle = document.getElementById('cart-toggle');
-    const closeCart = document.getElementById('close-cart');
-    const cartSidebar = document.getElementById('cart-sidebar');
-    
-    cartToggle.addEventListener('click', () => {
-        cartSidebar.classList.add('active');
-    });
-    
-    closeCart.addEventListener('click', () => {
-        cartSidebar.classList.remove('active');
-    });
+    // Cart toggle is handled by onclick="toggleCart()" in HTML
+    // No additional setup needed
 }
 
-// Checkout
-document.getElementById('checkout-btn')?.addEventListener('click', () => {
-    if (cart.length === 0) return;
+// Checkout function
+window.checkout = function() {
+    if (cart.length === 0) {
+        showInPageNotification('Your cart is empty');
+        return;
+    }
     
-    // For now, redirect to a checkout page or show a modal
-    // You can implement a full checkout process later
-    alert('Checkout functionality coming soon!');
-});
+    // Redirect to delivery/checkout page
+    window.location.href = 'delivery.html';
+}
+
+// Checkout button handler (if exists)
+document.getElementById('checkout-btn')?.addEventListener('click', checkout);
 
 // Show notification
 function showNotification(message) {
