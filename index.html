@@ -217,20 +217,26 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="js/firebase.js"></script>
     <script>
+        // Wait for Firebase auth to be ready
+        firebase.auth().onAuthStateChanged(function(user) {
+            console.log('Auth state changed:', user ? user.email : 'Not logged in');
+        });
+
         // Wait for DOM and Firebase to be ready
         document.addEventListener('DOMContentLoaded', function() {
             // Order Now button - check authentication
             const orderNowBtn = document.getElementById('orderNowBtn');
             if (orderNowBtn) {
                 orderNowBtn.addEventListener('click', function() {
-                    const user = firebase.auth().currentUser;
-                    if (user) {
-                        // User is logged in, redirect to menu
-                        window.location.href = 'menu.html';
-                    } else {
-                        // User is not logged in, redirect to login with return URL
-                        window.location.href = 'login.html?returnUrl=menu.html';
-                    }
+                    firebase.auth().onAuthStateChanged(function(user) {
+                        if (user) {
+                            // User is logged in, redirect to menu
+                            window.location.href = 'menu.html';
+                        } else {
+                            // User is not logged in, redirect to login with return URL
+                            window.location.href = 'login.html?returnUrl=menu.html';
+                        }
+                    });
                 });
             }
 
@@ -238,14 +244,15 @@
             const viewMenuBtn = document.getElementById('viewMenuBtn');
             if (viewMenuBtn) {
                 viewMenuBtn.addEventListener('click', function() {
-                    const user = firebase.auth().currentUser;
-                    if (user) {
-                        // User is logged in, redirect to menu
-                        window.location.href = 'menu.html';
-                    } else {
-                        // User is not logged in, redirect to login with return URL
-                        window.location.href = 'login.html?returnUrl=menu.html';
-                    }
+                    firebase.auth().onAuthStateChanged(function(user) {
+                        if (user) {
+                            // User is logged in, redirect to menu
+                            window.location.href = 'menu.html';
+                        } else {
+                            // User is not logged in, redirect to login with return URL
+                            window.location.href = 'login.html?returnUrl=menu.html';
+                        }
+                    });
                 });
             }
 
@@ -254,14 +261,15 @@
             if (menuNavLink) {
                 menuNavLink.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const user = firebase.auth().currentUser;
-                    if (user) {
-                        // User is logged in, redirect to menu
-                        window.location.href = 'menu.html';
-                    } else {
-                        // User is not logged in, redirect to login with return URL
-                        window.location.href = 'login.html?returnUrl=menu.html';
-                    }
+                    firebase.auth().onAuthStateChanged(function(user) {
+                        if (user) {
+                            // User is logged in, redirect to menu
+                            window.location.href = 'menu.html';
+                        } else {
+                            // User is not logged in, redirect to login with return URL
+                            window.location.href = 'login.html?returnUrl=menu.html';
+                        }
+                    });
                 });
             }
         });

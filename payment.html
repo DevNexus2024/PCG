@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - The Pizza Club and Grill</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #dc143c;
+            --secondary-color: #4169E1;
+            --text-dark: #333;
+            --text-light: #666;
+            --border-color: #ddd;
+            --bg-light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .nav-brand span {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .page-title {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-dark);
+        }
+
+        .payment-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .payment-section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Order Summary */
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .item-quantity {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .order-totals {
+            margin-top: 1.5rem;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+
+        .grand-total {
+            border-top: 2px solid var(--border-color);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        /* Customer Details */
+        .customer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            min-width: 120px;
+        }
+
+        .info-value {
+            color: var(--text-light);
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-option {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .payment-option:hover {
+            border-color: var(--secondary-color);
+            background: #f0f8ff;
+        }
+
+        .payment-option.selected {
+            border-color: var(--secondary-color);
+            background: #e6f2ff;
+        }
+
+        .payment-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .payment-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .payment-details {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .payment-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* MTN Mobile Money Input */
+        .mtn-input {
+            display: none;
+            margin-top: 1rem;
+            padding-left: 3rem;
+        }
+
+        .mtn-input.show {
+            display: block;
+        }
+
+        .mtn-input input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        /* Card Input */
+        .card-input {
+            display: none;
+            margin-top: 1rem;
+            padding-left: 3rem;
+        }
+
+        .card-input.show {
+            display: block;
+        }
+
+        .card-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .card-form input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .card-form input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .card-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .card-form label {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .card-icons i {
+            font-size: 1.5rem;
+        }
+
+        /* Secure Note */
+        .secure-note {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 5px;
+        }
+
+        .secure-note i {
+            color: #4caf50;
+            margin-right: 0.5rem;
+        }
+
+        /* Buttons */
+        .payment-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-pay {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-pay:hover {
+            background: #315ac1;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--border-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .payment-container {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <img src="images/images_(1).jpeg" alt="The Pizza Club and Grill Logo" class="brand-logo">
+                    <span>THE PIZZA CLUB AND GRILL</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <h1 class="page-title">SECURE PAYMENT</h1>
+
+    <div id="paymentContent" class="payment-container">
+        <!-- Order Summary Section -->
+        <div class="payment-section">
+            <h2 class="section-title"><i class="fas fa-receipt"></i> Order Summary</h2>
+            <div id="orderItems"></div>
+            <div class="order-totals">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">E0.00</span>
+                </div>
+                <div class="total-row">
+                    <span>Delivery Fee:</span>
+                    <span id="deliveryFee">E0.00</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total:</span>
+                    <span id="grandTotal">E0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Details Section -->
+        <div class="payment-section">
+            <!-- Customer Details -->
+            <h2 class="section-title"><i class="fas fa-user"></i> Customer Details</h2>
+            <div class="customer-info" id="customerInfo">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Payment Methods -->
+            <h2 class="section-title" style="margin-top: 2rem;"><i class="fas fa-credit-card"></i> Payment Method</h2>
+            
+            <div class="payment-methods">
+                <!-- MTN Mobile Money -->
+                <label class="payment-option" id="mtnOption">
+                    <input type="radio" name="paymentMethod" value="mtn" id="mtnRadio">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt" style="color: #FFCC00;"></i>
+                    </div>
+                    <div class="payment-details">
+                        <div class="payment-name">MTN Mobile Money</div>
+                        <div class="payment-desc">Pay securely with your MTN Mobile Money</div>
+                    </div>
+                </label>
+                <div class="mtn-input" id="mtnInput">
+                    <div class="card-form">
+                        <div class="form-group">
+                            <label for="mtnAccountName">Account Holder Name</label>
+                            <input type="text" id="mtnAccountName" placeholder="Enter name as registered with MTN" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mtnNumber">MTN Mobile Money Number</label>
+                            <input type="tel" id="mtnNumber" placeholder="76000000 or 26876000000" maxlength="11" required>
+                            <small style="color: #666; font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+                                Enter 8-digit number (e.g., 76216916) or 11-digit with country code (e.g., 26876216916)
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="mtnPin">Confirm Amount</label>
+                            <input type="text" id="mtnAmount" readonly style="background: #f5f5f5; font-weight: bold; color: var(--primary-color);">
+                            <small style="color: #666; font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+                                You will receive a prompt on your phone to confirm this payment
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Payment -->
+                <label class="payment-option" id="cardOption">
+                    <input type="radio" name="paymentMethod" value="card" id="cardRadio">
+                    <div class="payment-icon">
+                        <i class="fas fa-credit-card" style="color: #4169E1;"></i>
+                    </div>
+                    <div class="payment-details">
+                        <div class="payment-name">Credit/Debit Card</div>
+                        <div class="payment-desc">Pay with Visa, Mastercard, or other cards</div>
+                    </div>
+                </label>
+                <div class="card-input" id="cardInput">
+                    <div class="card-form">
+                        <div class="form-group">
+                            <label for="cardholderName">Cardholder Name</label>
+                            <input type="text" id="cardholderName" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cardNumber">Card Number</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                            <div class="card-icons">
+                                <i class="fab fa-cc-visa" style="color: #1434CB;"></i>
+                                <i class="fab fa-cc-mastercard" style="color: #EB001B;"></i>
+                                <i class="fab fa-cc-amex" style="color: #006FCF;"></i>
+                            </div>
+                        </div>
+                        <div class="card-row">
+                            <div class="form-group">
+                                <label for="expiryDate">Expiry Date</label>
+                                <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" placeholder="123" maxlength="4" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cash on Delivery -->
+                <label class="payment-option" id="codOption">
+                    <input type="radio" name="paymentMethod" value="cod" id="codRadio">
+                    <div class="payment-icon">
+                        <i class="fas fa-money-bill-wave" style="color: #28a745;"></i>
+                    </div>
+                    <div class="payment-details">
+                        <div class="payment-name">Cash on Delivery</div>
+                        <div class="payment-desc">Pay with cash when your order arrives</div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Secure Note -->
+            <div class="secure-note">
+                <i class="fas fa-lock"></i>
+                <strong>Secure Checkout:</strong> Your payment information is encrypted and secure.
+            </div>
+
+            <!-- Payment Actions -->
+            <div class="payment-actions">
+                <button class="btn btn-cancel" onclick="cancelPayment()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-pay" onclick="processPayment()" id="payButton">
+                    <i class="fas fa-check-circle"></i> Pay Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/payment.js"></script>
+</body>
+</html>
