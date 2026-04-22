@@ -137,10 +137,11 @@ function displayOrders(orders) {
         const itemCount = order.items ? order.items.length : 0;
         const statusClass = `status-${order.status || 'pending'}`;
         const statusText = (order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1);
+        const orderNumber = order.orderNumber || order.id.substring(0, 8);
         
         tableHTML += `
             <tr>
-                <td><span class="order-id">#${order.id.substring(0, 8)}</span></td>
+                <td><span class="order-id">#${orderNumber}</span></td>
                 <td>
                     <strong>${order.customerName || 'Unknown'}</strong><br>
                     <small>${order.customerEmail || ''}</small>
@@ -240,7 +241,7 @@ async function confirmOrder(orderId) {
         await sendCustomerNotification(order.userId, {
             type: 'order_confirmed',
             title: 'Order Confirmed',
-            message: `Your order #${orderId.substring(0, 8)} has been confirmed and is being prepared.`,
+            message: `Your order #${order.orderNumber || orderId.substring(0, 8)} has been confirmed and is being prepared.`,
             orderId: orderId,
             timestamp: Date.now()
         });
@@ -292,7 +293,7 @@ async function updateOrderStatus(orderId, newStatus) {
         await sendCustomerNotification(order.userId, {
             type: `order_${newStatus}`,
             title: notificationTitle,
-            message: `Order #${orderId.substring(0, 8)}: ${notificationMessages[newStatus]}`,
+            message: `Order #${order.orderNumber || orderId.substring(0, 8)}: ${notificationMessages[newStatus]}`,
             orderId: orderId,
             timestamp: Date.now()
         });
@@ -331,7 +332,7 @@ async function cancelOrder(orderId) {
         await sendCustomerNotification(order.userId, {
             type: 'order_cancelled',
             title: 'Order Cancelled',
-            message: `Your order #${orderId.substring(0, 8)} has been cancelled. Reason: ${reason}`,
+            message: `Your order #${order.orderNumber || orderId.substring(0, 8)} has been cancelled. Reason: ${reason}`,
             orderId: orderId,
             timestamp: Date.now()
         });
@@ -376,7 +377,7 @@ async function viewOrder(orderId) {
         const detailsHTML = `
             <div class="detail-row">
                 <span class="detail-label">Order ID:</span>
-                <span class="detail-value">#${orderId.substring(0, 8)}</span>
+                <span class="detail-value">#${order.orderNumber || orderId.substring(0, 8)}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Customer Name:</span>

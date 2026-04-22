@@ -207,7 +207,7 @@ function generateSalesReport(orders) {
 
         return `
             <tr>
-                <td>#${order.id.substring(0, 8)}</td>
+                <td>#${order.orderNumber || order.id.substring(0, 8)}</td>
                 <td>${formatDate(order.createdAt)}</td>
                 <td>${order.customerName || 'N/A'}</td>
                 <td>${itemCount}</td>

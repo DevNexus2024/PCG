@@ -100,7 +100,7 @@ function displayNotifications() {
                 <div class="notification-title">${notif.title || 'Notification'}</div>
                 <div class="notification-message">${notif.message}</div>
                 <div class="notification-time">${timeAgo}</div>
-                ${notif.orderId ? `<div class="notification-badge">Order #${notif.orderId.substring(0, 8)}</div>` : ''}
+                ${notif.orderId ? `<div class="notification-badge">Order #${notif.orderNumber || notif.orderId.substring(0, 8)}</div>` : ''}
             </div>
         `;
     }).join('');

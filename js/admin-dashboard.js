@@ -105,7 +105,7 @@ async function loadRecentOrders() {
             const itemCount = order.items ? order.items.length : 0;
             
             row.innerHTML = `
-                <td>#${orderId.substring(0, 8)}</td>
+                <td>#${order.orderNumber || orderId.substring(0, 8)}</td>
                 <td>${order.customerName || 'N/A'}</td>
                 <td>${itemCount} items</td>
                 <td>$${parseFloat(order.total || 0).toFixed(2)}</td>
@@ -366,7 +366,7 @@ function createNotification(order, orderId) {
         id: Date.now() + '_' + orderId,
         orderId: orderId,
         title: 'New Order Received',
-        message: `Order #${orderId.substring(0, 8)} from ${order.customerName || 'Customer'}`,
+        message: `Order #${order.orderNumber || orderId.substring(0, 8)} from ${order.customerName || 'Customer'}`,
         customerName: order.customerName || 'Unknown Customer',
         customerEmail: order.customerEmail || '',
         orderTotal: order.total || 0,

@@ -89,14 +89,14 @@ function showDeliveredNotification(order) {
     // Show browser notification
     if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Order Delivered! 🎉', {
-            body: `Your order #${order.id.substring(0, 8)} has been delivered. Enjoy your meal!`,
+            body: `Your order #${order.orderNumber || order.id.substring(0, 8)} has been delivered. Enjoy your meal!`,
             icon: 'images/images_(1).jpeg',
             badge: 'images/images_(1).jpeg'
         });
     }
     
     // Show in-page notification
-    showInPageNotification('🎉 Order Delivered!', `Your order #${order.id.substring(0, 8)} has been delivered. Enjoy!`);
+    showInPageNotification('🎉 Order Delivered!', `Your order #${order.orderNumber || order.id.substring(0, 8)} has been delivered. Enjoy!`);
     
     // Play notification sound
     playNotificationSound();
@@ -176,7 +176,7 @@ function createOrderCard(order) {
                         <i class="fas fa-receipt"></i>
                     </div>
                     <div class="order-id-info">
-                        <h3>Order #${order.id.substring(0, 8)}</h3>
+                        <h3>Order #${order.orderNumber || order.id.substring(0, 8)}</h3>
                         <div class="order-date">
                             <i class="fas fa-clock"></i> ${formatDate(order.createdAt)}
                         </div>

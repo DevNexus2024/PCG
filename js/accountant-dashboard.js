@@ -173,8 +173,8 @@ async function loadRecentTransactions() {
 
         const transactionsHTML = recentTransactions.map(transaction => `
             <tr>
-                <td><span class="order-id">#${transaction.id.substring(0, 8)}</span></td>
-                <td><span class="order-id">#${transaction.id.substring(0, 8)}</span></td>
+                <td><span class="order-id">#${transaction.orderNumber || transaction.id.substring(0, 8)}</span></td>
+                <td><span class="order-id">#${transaction.orderNumber || transaction.id.substring(0, 8)}</span></td>
                 <td>${transaction.customerName || 'Unknown'}</td>
                 <td><strong>E${parseFloat(transaction.total || 0).toFixed(2)}</strong></td>
                 <td>${transaction.paymentMethod || 'Cash'}</td>

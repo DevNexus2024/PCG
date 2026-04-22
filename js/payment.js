@@ -395,8 +395,9 @@ async function processPayment() {
     payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     
     try {
-        // Generate unique order number
-        const orderNumber = generateOrderNumber();
+        // Generate unique daily order number (resets each day)
+        const orderNumber = await generateDailyOrderNumber();
+        console.log('📋 Generated order number:', orderNumber);
         
         // Prepare order data
         const orderData = {
@@ -502,9 +503,49 @@ async function processPayment() {
                 cardType: detectCardType(cardNumber)
             };
             
-            // Card payment - mark as pending verification
-            orderData.paymentStatus = 'pending_verification';
-            orderData.paymentNote = 'Card payment pending verification';
+            // Process card payment via Flutterwave
+            console.log('💳 Processing card payment via Flutterwave...');
+            
+            try {
+                const flutterwaveOptions = {
+                    method: 'POST',
+                    headers: {
+                        accept: 'application/json', 
+                        'content-type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        card: {
+                            cof: {
+                                enabled: true
+                            }
+                        }, 
+                        type: 'card'
+                    })
+                };
+
+                const flutterwaveResponse = await fetch('https://developersandbox-api.flutterwave.com/payment-methods', flutterwaveOptions);
+                const flutterwaveResult = await flutterwaveResponse.json();
+                
+                console.log('Flutterwave payment response:', flutterwaveResult);
+                
+                if (flutterwaveResponse.ok && flutterwaveResult.status === 'success') {
+                    // Payment successful
+                    orderData.paymentStatus = 'paid';
+                    orderData.paymentTransactionId = flutterwaveResult.data?.id || null;
+                    orderData.paymentResponse = flutterwaveResult;
+                    orderData.paymentNote = 'Card payment processed via Flutterwave';
+                } else {
+                    // Payment failed or pending
+                    orderData.paymentStatus = 'pending_verification';
+                    orderData.paymentNote = flutterwaveResult.message || 'Card payment pending verification';
+                    orderData.paymentResponse = flutterwaveResult;
+                }
+            } catch (flutterwaveError) {
+                console.error('Flutterwave payment error:', flutterwaveError);
+                // Mark as pending verification if API call fails
+                orderData.paymentStatus = 'pending_verification';
+                orderData.paymentNote = 'Card payment pending verification - Flutterwave API error';
+            }
             
         } else if (paymentMethod === 'cod') {
             // Cash on delivery - mark as pending
@@ -554,10 +595,45 @@ function cancelPayment() {
     }
 }
 
-function generateOrderNumber() {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    return `ORD${timestamp}${random}`;
+// Generate daily sequential order number (resets at midnight)
+async function generateDailyOrderNumber() {
+    try {
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        const dateKey = today.toISOString().split('T')[0]; // e.g., "2026-04-22"
+        
+        console.log('📅 Getting order counter for date:', dateKey);
+        
+        // Reference to today's order counter in Firebase
+        const counterRef = database.ref(`orderCounters/${dateKey}`);
+        
+        // Use transaction to safely increment counter
+        const result = await counterRef.transaction((currentValue) => {
+            // If counter doesn't exist, start at 1, otherwise increment
+            return (currentValue || 0) + 1;
+        });
+        
+        if (!result.committed) {
+            throw new Error('Failed to generate order number - transaction not committed');
+        }
+        
+        const orderNumber = result.snapshot.val();
+        console.log('✅ Order counter value:', orderNumber);
+        
+        // Format as 5-digit number with leading zeros (00001, 00002, etc.)
+        const formattedNumber = String(orderNumber).padStart(5, '0');
+        
+        console.log('📋 Formatted order number:', formattedNumber);
+        
+        return formattedNumber;
+        
+    } catch (error) {
+        console.error('❌ Error generating order number:', error);
+        // Fallback to timestamp-based number if Firebase fails
+        const fallback = String(Date.now()).slice(-5);
+        console.warn('⚠️ Using fallback order number:', fallback);
+        return fallback;
+    }
 }
 
 function getPaymentMethodName(method) {
