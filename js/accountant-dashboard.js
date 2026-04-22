@@ -281,8 +281,86 @@ async function loadPaymentMethods() {
 }
 
 // Export transactions
-function exportTransactions() {
-    alert('Export functionality coming soon! This will download a CSV file with all transactions.');
+async function exportTransactions() {
+    try {
+        // Fetch all delivered orders
+        const ordersRef = database.ref('orders');
+        const snapshot = await ordersRef.once('value');
+        
+        if (!snapshot.exists()) {
+            alert('No transactions found to export.');
+            return;
+        }
+        
+        const transactions = [];
+        snapshot.forEach((childSnapshot) => {
+            const order = childSnapshot.val();
+            if (order.status === 'delivered') {
+                transactions.push({
+                    id: childSnapshot.key,
+                    ...order
+                });
+            }
+        });
+        
+        if (transactions.length === 0) {
+            alert('No completed transactions found to export.');
+            return;
+        }
+        
+        // Sort by date (newest first)
+        transactions.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        
+        // Create CSV content
+        const headers = ['Transaction ID', 'Order ID', 'Customer', 'Amount (E)', 'Payment Method', 'Date', 'Status'];
+        const csvRows = [headers.join(',')];
+        
+        transactions.forEach(transaction => {
+            const orderNumber = transaction.orderNumber || transaction.id.substring(0, 8);
+            const customerName = (transaction.customerName || 'Unknown').replace(/,/g, ';'); // Replace commas to avoid CSV issues
+            const amount = parseFloat(transaction.total || 0).toFixed(2);
+            const paymentMethod = (transaction.paymentMethod || 'Cash').replace(/,/g, ';');
+            const date = formatDate(transaction.createdAt);
+            const status = 'Completed';
+            
+            const row = [
+                `#${orderNumber}`,
+                `#${orderNumber}`,
+                customerName,
+                amount,
+                paymentMethod,
+                date,
+                status
+            ].join(',');
+            
+            csvRows.push(row);
+        });
+        
+        const csvContent = csvRows.join('\n');
+        
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        // Generate filename with current date
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const filename = `transactions_${dateStr}.csv`;
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert(`Successfully exported ${transactions.length} transactions to ${filename}`);
+        
+    } catch (error) {
+        console.error('Error exporting transactions:', error);
+        alert('Failed to export transactions. Please try again.');
+    }
 }
 
 // Format date

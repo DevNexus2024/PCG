@@ -74,7 +74,7 @@ async function loadDashboardStats() {
                 }
             });
         }
-        document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(2);
+        document.getElementById('totalRevenue').textContent = 'E' + totalRevenue.toFixed(2);
         
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
@@ -108,7 +108,7 @@ async function loadRecentOrders() {
                 <td>#${order.orderNumber || orderId.substring(0, 8)}</td>
                 <td>${order.customerName || 'N/A'}</td>
                 <td>${itemCount} items</td>
-                <td>$${parseFloat(order.total || 0).toFixed(2)}</td>
+                <td>E${parseFloat(order.total || 0).toFixed(2)}</td>
                 <td><span class="status-badge status-${order.status}">${order.status}</span></td>
                 <td>${date}</td>
             `;
@@ -143,7 +143,7 @@ async function loadMenuItems() {
                     <strong>${item.name}</strong>
                 </td>
                 <td>${item.category || 'Uncategorized'}</td>
-                <td>$${parseFloat(item.price || 0).toFixed(2)}</td>
+                <td>E${parseFloat(item.price || 0).toFixed(2)}</td>
                 <td><span class="status-badge status-${item.available ? 'available' : 'unavailable'}">${item.available ? 'Available' : 'Unavailable'}</span></td>
                 <td>
                     <button class="action-btn" onclick="editMenuItem('${itemId}')" title="Edit">

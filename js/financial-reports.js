@@ -2,6 +2,8 @@
 
 let reportData = [];
 let currentReportType = 'sales';
+let revenueTrendChart = null;
+let categoryChart = null;
 
 // Check authentication
 document.addEventListener('DOMContentLoaded', () => {
@@ -163,6 +165,11 @@ async function generateReport() {
         }
 
         updateSummaryCards(orders);
+        
+        // Render charts
+        renderRevenueTrendChart(orders);
+        await renderCategoryBreakdownChart(orders);
+        
     } catch (error) {
         console.error('Error generating report:', error);
         alert('Error generating report. Please try again.');
@@ -707,6 +714,199 @@ function formatDateShort(date) {
         month: 'short',
         day: 'numeric'
     });
+}
+
+// Render Revenue Trend Chart
+function renderRevenueTrendChart(orders) {
+    // Destroy existing chart if it exists
+    if (revenueTrendChart) {
+        revenueTrendChart.destroy();
+    }
+
+    // Group revenue by date
+    const revenueByDate = {};
+    orders.forEach(order => {
+        if (order.status === 'delivered') {
+            const date = new Date(order.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+            });
+            if (!revenueByDate[date]) {
+                revenueByDate[date] = 0;
+            }
+            revenueByDate[date] += parseFloat(order.total || 0);
+        }
+    });
+
+    // Sort dates
+    const sortedDates = Object.keys(revenueByDate).sort((a, b) => {
+        return new Date(a) - new Date(b);
+    });
+
+    const labels = sortedDates;
+    const data = sortedDates.map(date => revenueByDate[date]);
+
+    // If no data, show a message
+    if (labels.length === 0 || data.every(val => val === 0)) {
+        const chartContainer = document.getElementById('revenueTrendChart');
+        chartContainer.innerHTML = '<p class="text-center" style="padding: 3rem; color: var(--gray);"><i class="fas fa-chart-line fa-3x"></i><br><br>No revenue data available for the selected period</p>';
+        return;
+    }
+
+    // Clear the placeholder message
+    const chartContainer = document.getElementById('revenueTrendChart');
+    chartContainer.innerHTML = '<canvas id="revenueTrendCanvas" style="width: 100%; height: 100%;"></canvas>';
+
+    // Create the chart
+    const ctx = document.getElementById('revenueTrendCanvas').getContext('2d');
+    revenueTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue (E)',
+                data: data,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Revenue: E ' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'E ' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Render Category Breakdown Chart
+async function renderCategoryBreakdownChart(orders) {
+    // Destroy existing chart if it exists
+    if (categoryChart) {
+        categoryChart.destroy();
+    }
+
+    try {
+        // Fetch menu items to get categories
+        const menuItemsSnapshot = await database.ref('menuItems').once('value');
+        const menuItemsData = menuItemsSnapshot.val() || {};
+        
+        // Create a map of item ID to category
+        const itemCategoryMap = {};
+        Object.keys(menuItemsData).forEach(itemId => {
+            const item = menuItemsData[itemId];
+            itemCategoryMap[itemId] = item.category || 'Uncategorized';
+        });
+
+        // Group sales by category
+        const salesByCategory = {};
+        orders.forEach(order => {
+            if (order.status === 'delivered' && order.items) {
+                order.items.forEach(item => {
+                    const category = itemCategoryMap[item.id] || item.category || 'Uncategorized';
+                    if (!salesByCategory[category]) {
+                        salesByCategory[category] = 0;
+                    }
+                    salesByCategory[category] += item.price * item.quantity;
+                });
+            }
+        });
+
+        const labels = Object.keys(salesByCategory);
+        const data = Object.values(salesByCategory);
+
+        // If no data, show a message
+        if (labels.length === 0 || data.every(val => val === 0)) {
+            const chartContainer = document.getElementById('categoryChart');
+            chartContainer.innerHTML = '<p class="text-center" style="padding: 3rem; color: var(--gray);"><i class="fas fa-chart-pie fa-3x"></i><br><br>No sales data available for category breakdown</p>';
+            return;
+        }
+
+        // Generate colors for categories
+        const backgroundColors = [
+            '#3b82f6',
+            '#10b981',
+            '#f59e0b',
+            '#ef4444',
+            '#8b5cf6',
+            '#ec4899',
+            '#14b8a6',
+            '#f97316'
+        ];
+
+        // Clear the placeholder message
+        const chartContainer = document.getElementById('categoryChart');
+        chartContainer.innerHTML = '<canvas id="categoryCanvas" style="width: 100%; height: 100%;"></canvas>';
+
+        // Create the chart
+        const ctx = document.getElementById('categoryCanvas').getContext('2d');
+        categoryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColors.slice(0, labels.length),
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': E ' + value.toFixed(2) + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error rendering category breakdown:', error);
+        const chartContainer = document.getElementById('categoryChart');
+        chartContainer.innerHTML = '<p class="text-center" style="padding: 3rem; color: var(--error);"><i class="fas fa-exclamation-triangle fa-3x"></i><br><br>Error loading category data</p>';
+    }
 }
 
 // Logout
