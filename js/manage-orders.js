@@ -1,19 +1,27 @@
 // Manage Orders JavaScript
 let allOrders = [];
+let currentUser = null;
 
 // Load orders on page load
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Manage Orders page loaded');
     checkAuth();
-    loadOrders();
 });
 
 // Check authentication
 function checkAuth() {
+    console.log('🔐 Checking authentication...');
     auth.onAuthStateChanged(async (user) => {
+        console.log('Auth state changed. User:', user ? user.email : 'None');
+        
         if (!user) {
+            console.warn('⚠️ No user logged in, redirecting to login');
             window.location.href = 'login.html';
             return;
         }
+
+        currentUser = user;
+        console.log('✅ User authenticated:', user.email);
 
         // Check if user is staff
         const email = user.email.toLowerCase();
@@ -30,25 +38,39 @@ function checkAuth() {
         if (!userData || !['admin', 'supervisor', 'cashier'].includes(userData.role)) {
             alert('Access denied. Insufficient permissions.');
             window.location.href = 'menu.html';
+            return;
         }
+
+        console.log('✅ User has proper role:', userData.role);
+        console.log('📥 Now loading orders...');
+        
+        // Only load orders after authentication is confirmed
+        loadOrders();
     });
 }
 
 // Load all orders from Firebase
 function loadOrders() {
+    console.log('🔍 Loading orders from Firebase...');
     const ordersRef = database.ref('orders');
     
     ordersRef.on('value', (snapshot) => {
+        console.log('📦 Firebase snapshot received');
+        console.log('Snapshot exists:', snapshot.exists());
+        console.log('Number of children:', snapshot.numChildren());
+        
         allOrders = [];
         const tableBody = document.getElementById('ordersTableBody');
         
         if (!snapshot.exists()) {
+            console.warn('⚠️ No orders found in Firebase');
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="7" class="empty-state">
                         <i class="fas fa-shopping-cart"></i>
                         <h3>No Orders Yet</h3>
                         <p>Orders will appear here when customers place them</p>
+                        <p style="color: #999; font-size: 0.9rem; margin-top: 1rem;">If you just placed an order, check the browser console for errors.</p>
                     </td>
                 </tr>
             `;
@@ -57,21 +79,45 @@ function loadOrders() {
 
         snapshot.forEach((childSnapshot) => {
             const order = childSnapshot.val();
+            console.log('📝 Order loaded:', childSnapshot.key, order);
             allOrders.push({
                 id: childSnapshot.key,
                 ...order
             });
         });
 
+        console.log(`✅ Total orders loaded: ${allOrders.length}`);
+        
         // Sort by date (newest first)
         allOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
         displayOrders(allOrders);
+    }, (error) => {
+        console.error('❌ Firebase error loading orders:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        const tableBody = document.getElementById('ordersTableBody');
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state" style="color: red;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Error Loading Orders</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p style="font-size: 0.9rem; margin-top: 1rem;">
+                        ${error.code === 'PERMISSION_DENIED' ? 
+                            'Firebase permission denied. Check your database rules in Firebase Console.' : 
+                            'Check browser console (F12) for more details.'}
+                    </p>
+                </td>
+            </tr>
+        `;
     });
 }
 
 // Display orders in table
 function displayOrders(orders) {
+    console.log('🎨 Displaying orders:', orders.length);
     const tableBody = document.getElementById('ordersTableBody');
     
     if (orders.length === 0) {
@@ -191,7 +237,7 @@ async function confirmOrder(orderId) {
         });
 
         // Send notification to customer
-        await sendCustomerNotification(order.customerId, {
+        await sendCustomerNotification(order.userId, {
             type: 'order_confirmed',
             title: 'Order Confirmed',
             message: `Your order #${orderId.substring(0, 8)} has been confirmed and is being prepared.`,
@@ -217,7 +263,7 @@ async function updateOrderStatus(orderId, newStatus) {
     const notificationMessages = {
         'preparing': 'Your order is now being prepared.',
         'ready': 'Your order is ready for pickup/delivery!',
-        'delivered': 'Your order has been delivered. Enjoy!'
+        'delivered': '🎉 Your order has been delivered! Enjoy your meal from The Pizza Club and Grill!'
     };
 
     if (!confirm(statusMessages[newStatus])) {
@@ -242,9 +288,10 @@ async function updateOrderStatus(orderId, newStatus) {
         });
 
         // Send notification to customer
-        await sendCustomerNotification(order.customerId, {
+        const notificationTitle = newStatus === 'delivered' ? '🎉 Order Delivered!' : 'Order Update';
+        await sendCustomerNotification(order.userId, {
             type: `order_${newStatus}`,
-            title: 'Order Update',
+            title: notificationTitle,
             message: `Order #${orderId.substring(0, 8)}: ${notificationMessages[newStatus]}`,
             orderId: orderId,
             timestamp: Date.now()
@@ -281,7 +328,7 @@ async function cancelOrder(orderId) {
         });
 
         // Send notification to customer
-        await sendCustomerNotification(order.customerId, {
+        await sendCustomerNotification(order.userId, {
             type: 'order_cancelled',
             title: 'Order Cancelled',
             message: `Your order #${orderId.substring(0, 8)} has been cancelled. Reason: ${reason}`,

@@ -414,8 +414,8 @@ async function processPayment() {
             total: pendingOrder.subtotal + pendingOrder.deliveryFee,
             paymentMethod: paymentMethod,
             paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending_verification',
-            orderStatus: 'pending',
-            createdAt: new Date().toISOString(),
+            status: 'pending',
+            createdAt: Date.now(),
             orderNumber: orderNumber
         };
         
@@ -511,12 +511,20 @@ async function processPayment() {
             orderData.paymentStatus = 'pending';
         }
         
-        console.log('Saving order to Firebase:', orderData);
+        console.log('💾 Saving order to Firebase:', orderData);
+        console.log('Order will be saved to path: /orders');
         
         // Save order to Firebase
         const orderRef = await database.ref('orders').push(orderData);
         
-        console.log('Order saved successfully:', orderRef.key);
+        console.log('✅ Order saved successfully!');
+        console.log('Order ID:', orderRef.key);
+        console.log('Order Number:', orderData.orderNumber);
+        console.log('Full Firebase path:', orderRef.toString());
+        
+        // Verify the order was saved by reading it back
+        const savedOrder = await orderRef.once('value');
+        console.log('✅ Verified order in database:', savedOrder.val());
         
         // Clear pending order from localStorage
         localStorage.removeItem('pendingOrder');

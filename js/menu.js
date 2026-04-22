@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCartToggle();
     updateCartUI();
     initializeAuth();
+    setupOrderTrackingButton();
 });
 
 // Initialize authentication and notifications
@@ -285,10 +286,14 @@ function displayMenuItems(items) {
         
         console.log(`Item ${item.name}: status=${item.status}, available field=${item.available}, final available=${available}`);
         
+        // Get fallback image - use first image from folder as placeholder
+        const fallbackImage = './images/images_(1).jpeg';
+        const imageUrl = item.imageUrl || fallbackImage;
+        
         return `
         <div class="menu-item-card" data-id="${item.id}">
             <div class="item-image">
-                <img src="${item.imageUrl || './images/placeholder.jpg'}" alt="${item.name}">
+                <img src="${imageUrl}" alt="${item.name}" onerror="this.src='${fallbackImage}'; this.onerror=null;">
                 ${!available ? '<div class="out-of-stock">Out of Stock</div>' : ''}
             </div>
             <div class="item-content">
@@ -510,4 +515,14 @@ function showNotification(message) {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
     }, 2000);
+}
+
+// Setup Order Tracking Button
+function setupOrderTrackingButton() {
+    const orderTrackingBtn = document.getElementById('orderTrackingBtn');
+    if (orderTrackingBtn) {
+        orderTrackingBtn.addEventListener('click', () => {
+            window.location.href = 'order-tracking.html';
+        });
+    }
 }

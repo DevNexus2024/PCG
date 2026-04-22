@@ -122,10 +122,14 @@ function displayMenuItems(items) {
         const category = categories.find(cat => cat.id === item.category);
         const categoryName = category ? category.name : 'Unknown';
         
+        // Use existing image as fallback
+        const fallbackImage = './images/images_(1).jpeg';
+        const imageUrl = item.imageUrl || fallbackImage;
+        
         tableHTML += `
             <tr>
                 <td class="item-image-cell">
-                    <img src="${item.imageUrl || './images/placeholder.jpg'}" alt="${item.name}">
+                    <img src="${imageUrl}" alt="${item.name}" onerror="this.src='${fallbackImage}'; this.onerror=null;">
                 </td>
                 <td>
                     <span class="item-id">${item.id || 'N/A'}</span>
@@ -273,20 +277,30 @@ document.getElementById('menuItemForm').addEventListener('submit', async (e) => 
         return;
     }
     
+    // Get button reference before try block
+    const submitBtn = e.target.querySelector('.btn-submit');
+    const originalText = submitBtn.innerHTML;
+    
     try {
         // Show loading
-        const submitBtn = e.target.querySelector('.btn-submit');
-        const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
         submitBtn.disabled = true;
         
         let imageUrl = null;
+        let imageUploadFailed = false;
         
         // Upload image if provided
         if (imageFile) {
-            const storageRef = storage.ref('menuItems/' + Date.now() + '_' + imageFile.name);
-            const uploadTask = await storageRef.put(imageFile);
-            imageUrl = await uploadTask.ref.getDownloadURL();
+            try {
+                const storageRef = storage.ref('menuItems/' + Date.now() + '_' + imageFile.name);
+                const uploadTask = await storageRef.put(imageFile);
+                imageUrl = await uploadTask.ref.getDownloadURL();
+            } catch (uploadError) {
+                console.error('Image upload failed:', uploadError);
+                imageUploadFailed = true;
+                // Continue saving without image
+                imageUrl = null;
+            }
         } else if (editingItemId) {
             // Keep existing image if editing and no new image provided
             const existingItem = await database.ref('menuItems/' + editingItemId).once('value');
@@ -310,7 +324,12 @@ document.getElementById('menuItemForm').addEventListener('submit', async (e) => 
             // Update existing item
             itemData.id = editingItemId;
             await database.ref('menuItems/' + editingItemId).update(itemData);
-            alert('Menu item updated successfully!');
+            
+            if (imageUploadFailed) {
+                alert('Menu item updated successfully!\n\nNote: Image upload failed due to Firebase Storage permissions. The item was saved without the image. Please check FIREBASE_STORAGE_FIX.md for instructions to fix this.');
+            } else {
+                alert('Menu item updated successfully!');
+            }
         } else {
             // Create new item
             itemData.createdAt = firebase.database.ServerValue.TIMESTAMP;
@@ -319,7 +338,12 @@ document.getElementById('menuItemForm').addEventListener('submit', async (e) => 
             await database.ref('menuItems/' + newItemRef.key).update({
                 id: newItemRef.key
             });
-            alert('Menu item added successfully!');
+            
+            if (imageUploadFailed) {
+                alert('Menu item added successfully!\n\nNote: Image upload failed due to Firebase Storage permissions. The item was saved without the image. Please check FIREBASE_STORAGE_FIX.md for instructions to fix this.');
+            } else {
+                alert('Menu item added successfully!');
+            }
         }
         
         // Reset form and close modal

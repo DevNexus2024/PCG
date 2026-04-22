@@ -1,0 +1,62 @@
+======================================================================
+FIREBASE REALTIME DATABASE RULES - COPY AND PASTE THIS EXACTLY
+======================================================================
+
+STEP 1: Go to https://console.firebase.google.com
+
+STEP 2: Select your project: food-ordering-website-2025
+
+STEP 3: Click "Realtime Database" in left menu
+
+STEP 4: Click "Rules" tab at the top
+
+STEP 5: DELETE EVERYTHING in the rules editor
+
+STEP 6: COPY AND PASTE EXACTLY THIS (including the curly braces):
+
+{
+  "rules": {
+    "orders": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["userId", "status", "createdAt"]
+    },
+    "notifications": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null",
+        ".indexOn": ["timestamp", "read"]
+      }
+    },
+    "users": {
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "menuItems": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "categories": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}
+
+STEP 7: Click the red "Publish" button
+
+STEP 8: Wait for "Rules published successfully" message
+
+STEP 9: Go back to your Manage Orders page and click "Refresh" button
+
+======================================================================
+DONE! Your orders should now appear.
+======================================================================
+
+If you still have issues after this:
+1. Make sure you're logged in as admin (pcg001@gmail.com)
+2. Check browser console (F12) for any other errors
+3. Try logging out and logging back in
+======================================================================
