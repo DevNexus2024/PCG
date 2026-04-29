@@ -21,6 +21,10 @@ STEP 6: COPY AND PASTE EXACTLY THIS (including the curly braces):
       ".write": "auth != null",
       ".indexOn": ["userId", "status", "createdAt"]
     },
+    "orderCounters": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
     "notifications": {
       "$userId": {
         ".read": "auth != null && auth.uid == $userId",
@@ -29,9 +33,12 @@ STEP 6: COPY AND PASTE EXACTLY THIS (including the curly braces):
       }
     },
     "users": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["email", "role", "branch"],
       "$userId": {
         ".read": "auth != null",
-        ".write": "auth != null && auth.uid == $userId"
+        ".write": "auth != null"
       }
     },
     "menuItems": {
@@ -48,6 +55,15 @@ STEP 6: COPY AND PASTE EXACTLY THIS (including the curly braces):
 STEP 7: Click the red "Publish" button
 
 STEP 8: Wait for "Rules published successfully" message
+
+STEP 9: Close the browser and refresh fix-role.html page
+
+======================================================================
+NOTES:
+- These rules allow authenticated users to query by email
+- Required for fix-role.html to work properly
+- Allows role and branch updates for admin management
+======================================================================
 
 STEP 9: Go back to your Manage Orders page and click "Refresh" button
 

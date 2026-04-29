@@ -42,7 +42,12 @@ function checkAuth() {
 
             // Display user name
             console.log('Accountant verified, displaying dashboard');
-            document.getElementById('accountantName').textContent = userData.fullname || user.email.split('@')[0];
+            const userName = userData.fullname || userData.fullName || user.email.split('@')[0];
+            
+            // Accountants see all branches - don't filter by branch
+            document.getElementById('accountantName').textContent = `${userName} - Company Accountant (All Branches)`;
+            
+            console.log('💼 Accountant has access to ALL branches financial data');
         } catch (error) {
             console.error('Error checking auth:', error);
             alert('Error verifying credentials. Please try again.');

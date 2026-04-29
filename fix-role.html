@@ -99,26 +99,40 @@
         
         <div class="info">
             <strong>Instructions:</strong><br>
-            1. Enter the email address: <code>pcg001@gmail.com</code><br>
-            2. Select the role: <strong>supervisor</strong><br>
-            3. Click "Update Role"<br>
-            4. After successful update, try logging in again.
+            1. Enter the email address: <code>pcg002Mba@gmail.com</code> (Mbabane Branch)<br>
+            2. Select the role: <strong>admin</strong> or <strong>supervisor</strong><br>
+            3. Select the branch: <strong>Mbabane</strong><br>
+            4. Click "Update Role"<br>
+            5. After successful update, try logging in again.<br><br>
+            <strong>Branches:</strong><br>
+            • <code>pcg001@gmail.com</code> - Manzini (Headquarters)<br>
+            • <code>pcg002Mba@gmail.com</code> - Mbabane Branch
         </div>
 
         <form id="roleForm">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" value="pcg001@gmail.com" required>
+                <input type="email" id="email" value="pcg002Mba@gmail.com" required>
             </div>
 
             <div class="form-group">
                 <label for="role">Role</label>
                 <select id="role" required>
                     <option value="">Select a role</option>
-                    <option value="admin">Admin</option>
-                    <option value="supervisor" selected>Supervisor</option>
+                    <option value="admin" selected>Admin</option>
+                    <option value="supervisor">Supervisor</option>
                     <option value="cashier">Cashier</option>
+                    <option value="accountant">Accountant</option>
                     <option value="customer">Customer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="branch">Branch Location</label>
+                <select id="branch" required>
+                    <option value="">Select a branch</option>
+                    <option value="manzini">Manzini (Headquarters)</option>
+                    <option value="mbabane" selected>Mbabane</option>
                 </select>
             </div>
 
@@ -134,45 +148,79 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <!-- Firebase Config -->
-    <script type="module">
-        import { auth, database } from './js/firebase.js';
-        
-        window.auth = auth;
-        window.database = database;
-    </script>
+    <script src="js/firebase.js"></script>
 
     <script>
+        // Check authentication status
+        let currentUser = null;
+        
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            if (!user) {
+                document.getElementById('message').className = 'message error';
+                document.getElementById('message').textContent = '⚠️ You must be logged in to use this tool. Please login first at login.html';
+                document.getElementById('message').style.display = 'block';
+                document.querySelector('button[type="submit"]').disabled = true;
+            } else {
+                console.log('Authenticated as:', user.email);
+            }
+        });
+        
         document.getElementById('roleForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            if (!currentUser) {
+                alert('Please login first. Redirecting to login page...');
+                window.location.href = 'login.html';
+                return;
+            }
+            
             const email = document.getElementById('email').value.trim();
             const role = document.getElementById('role').value;
+            const branch = document.getElementById('branch').value;
             const messageDiv = document.getElementById('message');
+            
+            // Show loading message
+            messageDiv.className = 'message';
+            messageDiv.style.background = '#fff3cd';
+            messageDiv.style.color = '#856404';
+            messageDiv.style.border = '1px solid #ffeaa7';
+            messageDiv.textContent = '⏳ Updating user role...';
+            messageDiv.style.display = 'block';
             
             try {
                 // Search for user by email
+                console.log('Searching for user with email:', email);
                 const usersRef = database.ref('users');
                 const snapshot = await usersRef.orderByChild('email').equalTo(email).once('value');
                 
                 if (!snapshot.exists()) {
-                    throw new Error('User not found with this email address.');
+                    throw new Error('User not found with this email address. Please make sure the user has signed up first.');
                 }
                 
-                // Update the user's role
+                // Update the user's role and branch
                 let updated = false;
+                let userName = '';
                 snapshot.forEach((childSnapshot) => {
                     const userId = childSnapshot.key;
+                    const userData = childSnapshot.val();
+                    userName = userData.fullName || userData.fullname || email;
+                    
+                    console.log('Updating user:', userId);
                     database.ref('users/' + userId).update({
                         role: role,
+                        branch: branch,
                         updatedAt: firebase.database.ServerValue.TIMESTAMP
                     });
                     updated = true;
                 });
                 
                 if (updated) {
+                    const branchName = branch === 'manzini' ? 'Manzini (Headquarters)' : 'Mbabane';
                     messageDiv.className = 'message success';
-                    messageDiv.textContent = `✓ Role updated successfully! User ${email} is now a ${role}. You can now login with this account.`;
+                    messageDiv.textContent = `✓ Role updated successfully!\n\nUser: ${userName} (${email})\nRole: ${role.toUpperCase()}\nBranch: ${branchName}\n\nYou can now login with this account at ${window.location.origin}/admin-dashboard.html`;
                     messageDiv.style.display = 'block';
+                    messageDiv.style.whiteSpace = 'pre-line';
                 } else {
                     throw new Error('Failed to update role.');
                 }

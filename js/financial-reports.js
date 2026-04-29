@@ -29,7 +29,12 @@ function checkAuth() {
                 return;
             }
 
-            document.getElementById('accountantName').textContent = userData.fullname || user.email.split('@')[0];
+            const userName = userData.fullname || userData.fullName || user.email.split('@')[0];
+            
+            // Accountants see all branches - don't filter by branch
+            document.getElementById('accountantName').textContent = `${userName} - Company Accountant (All Branches)`;
+            
+            console.log('💼 Accountant has access to ALL branches financial data');
         } catch (error) {
             console.error('Error checking auth:', error);
             window.location.href = 'login.html';
@@ -135,6 +140,7 @@ async function generateReport() {
                 ...childSnapshot.val()
             };
             
+            // Filter by date range only (no branch filtering for accountants)
             const orderDate = new Date(order.createdAt);
             if (orderDate >= dateFrom && orderDate <= dateTo) {
                 orders.push(order);
@@ -142,6 +148,7 @@ async function generateReport() {
         });
 
         reportData = orders;
+        console.log(`📊 Report generated for ALL branches: ${orders.length} orders`);
 
         switch(currentReportType) {
             case 'sales':

@@ -34,7 +34,18 @@ function checkAdminAuth() {
             
             if (userData && userData.role && (userData.role === 'admin' || userData.role === 'supervisor' || userData.role === 'cashier')) {
                 // User is authorized
-                document.getElementById('adminName').textContent = userData.fullName || user.email;
+                const userName = userData.fullName || userData.fullname || user.email;
+                const branch = userData.branch || 'manzini';
+                const branchName = branch === 'mbabane' ? 'Mbabane' : 'Manzini (HQ)';
+                
+                document.getElementById('adminName').textContent = `${userName} - ${branchName}`;
+                
+                // Store branch for filtering orders by city
+                window.userBranch = branch;
+                window.userRole = userData.role;
+                window.branchCityName = getBranchCityName(branch);
+                
+                console.log('👤 Admin logged in:', userName, '| Branch:', branchName, '| City filter:', window.branchCityName);
             } else {
                 // Not authorized, redirect to login
                 alert('Access denied. Admin privileges required.');
@@ -44,36 +55,89 @@ function checkAdminAuth() {
     });
 }
 
-// Load Dashboard Statistics
+// Get city name from branch code
+function getBranchCityName(branchCode) {
+    const branchMapping = {
+        'manzini': 'Manzini',
+        'mbabane': 'Mbabane',
+        'siteki': 'Siteki',
+        'nhlangano': 'Nhlangano',
+        'piggs': 'Piggs Peak',
+        'mba': 'Mbabane',
+        'dur': 'Durban',
+        'stn': 'Siteki'
+    };
+    return branchMapping[branchCode.toLowerCase()] || branchCode;
+}
+
+// Filter orders by branch city
+function filterOrdersByBranch(ordersObj) {
+    if (!ordersObj) return [];
+    
+    const branchCity = window.branchCityName;
+    
+    // Defensive check
+    if (!branchCity) {
+        console.warn('⚠️ branchCityName not set, showing all orders');
+        // Return all orders if branch city is not set
+        return Object.keys(ordersObj).map(orderId => ({
+            id: orderId,
+            order: ordersObj[orderId]
+        }));
+    }
+    
+    const ordersArray = [];
+    
+    Object.keys(ordersObj).forEach(orderId => {
+        const order = ordersObj[orderId];
+        
+        // Normalize city names for comparison (trim and lowercase)
+        const orderCity = order.deliveryCity ? order.deliveryCity.toLowerCase().trim() : null;
+        const filterCity = branchCity.toLowerCase().trim();
+        
+        // If order has no city (old orders or pickup), show to all branches
+        // If order has city, only show to matching branch
+        if (!orderCity || orderCity === filterCity) {
+            ordersArray.push({ id: orderId, order: order });
+            console.log('✓ Order included:', orderId, '| City:', order.deliveryCity || 'N/A (all branches)');
+        } else {
+            console.log('✗ Order filtered:', orderId, '| City:', order.deliveryCity, '!==', branchCity);
+        }
+    });
+    
+    console.log(`📊 Filtered ${ordersArray.length} orders for ${branchCity}`);
+    return ordersArray;
+}
+
+// Load Dashboard Statistics (filtered by branch)
 async function loadDashboardStats() {
     try {
         // Get total orders
         const ordersSnapshot = await database.ref('orders').once('value');
-        const orders = ordersSnapshot.val();
-        const totalOrders = orders ? Object.keys(orders).length : 0;
+        const allOrders = ordersSnapshot.val();
+        const filteredOrders = filterOrdersByBranch(allOrders);
+        const totalOrders = filteredOrders.length;
         document.getElementById('totalOrders').textContent = totalOrders;
         
-        // Get total categories
+        // Get total categories (same for all branches)
         const categoriesSnapshot = await database.ref('categories').once('value');
         const categories = categoriesSnapshot.val();
         const totalCategories = categories ? Object.keys(categories).length : 0;
         document.getElementById('totalCategories').textContent = totalCategories;
         
-        // Get total menu items
+        // Get total menu items (same for all branches)
         const menuSnapshot = await database.ref('menuItems').once('value');
         const menuItems = menuSnapshot.val();
         const totalMenuItems = menuItems ? Object.keys(menuItems).length : 0;
         document.getElementById('totalMenuItems').textContent = totalMenuItems;
         
-        // Calculate total revenue
+        // Calculate total revenue (only for this branch)
         let totalRevenue = 0;
-        if (orders) {
-            Object.values(orders).forEach(order => {
-                if (order.status === 'completed') {
-                    totalRevenue += parseFloat(order.total || 0);
-                }
-            });
-        }
+        filteredOrders.forEach(({ order }) => {
+            if (order.status === 'completed') {
+                totalRevenue += parseFloat(order.total || 0);
+            }
+        });
         document.getElementById('totalRevenue').textContent = 'E' + totalRevenue.toFixed(2);
         
     } catch (error) {
@@ -81,27 +145,36 @@ async function loadDashboardStats() {
     }
 }
 
-// Load Recent Orders
+// Load Recent Orders (filtered by branch city)
 async function loadRecentOrders() {
     try {
-        const ordersRef = database.ref('orders').orderByChild('timestamp').limitToLast(10);
+        const ordersRef = database.ref('orders').orderByChild('createdAt').limitToLast(50);
         const snapshot = await ordersRef.once('value');
-        const orders = snapshot.val();
+        const allOrders = snapshot.val();
         
         const tbody = document.getElementById('ordersTableBody');
         tbody.innerHTML = '';
         
-        if (!orders) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No orders found</td></tr>';
+        if (!allOrders) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No orders found</td></tr>';
             return;
         }
         
-        // Convert to array and reverse (newest first)
-        const ordersArray = Object.entries(orders).reverse();
+        // Filter orders by branch city
+        const orders = filterOrdersByBranch(allOrders);
         
-        ordersArray.forEach(([orderId, order]) => {
+        if (orders.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No orders found for ${window.branchCityName || 'this branch'}</td></tr>`;
+            return;
+        }
+        
+        // Sort by createdAt descending (most recent first) and take last 10
+        orders.sort((a, b) => (b.order.createdAt || 0) - (a.order.createdAt || 0));
+        const recentOrders = orders.slice(0, 10);
+        
+        recentOrders.forEach(({ id: orderId, order }) => {
             const row = document.createElement('tr');
-            const date = new Date(order.timestamp).toLocaleDateString();
+            const date = new Date(order.createdAt || order.timestamp).toLocaleDateString();
             const itemCount = order.items ? order.items.length : 0;
             
             row.innerHTML = `

@@ -408,6 +408,8 @@ async function processPayment() {
             customerEmail: pendingOrder.customerEmail || currentUser.email,
             orderType: pendingOrder.orderType,
             deliveryAddress: pendingOrder.deliveryAddress || null,
+            deliveryCity: pendingOrder.deliveryCity || null,
+            deliveryZone: pendingOrder.deliveryZone || null,
             specialInstructions: pendingOrder.specialInstructions || null,
             items: pendingOrder.items,
             subtotal: pendingOrder.subtotal,

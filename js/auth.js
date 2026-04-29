@@ -51,35 +51,60 @@ document.addEventListener('DOMContentLoaded', function() {
                     const userDataSnapshot = await database.ref('users/' + user.uid).once('value');
                     let userData = userDataSnapshot.val();
                     
-                    // Determine correct role based on email pattern
-                    let correctRole = 'customer';
+                    // Determine role and branch based on email pattern
+                    let autoRole = 'customer';
+                    let autoBranch = null;
                     const emailLower = user.email.toLowerCase();
                     
-                    if (emailLower.includes('pcg-a')) {
-                        // Accountant (pcg-a001@gmail.com, etc.)
-                        correctRole = 'accountant';
-                    } else if (emailLower.match(/pcg\d+@/)) {
-                        // Admin/Supervisor/Cashier (pcg001@gmail.com, pcg002@gmail.com, etc.)
-                        correctRole = 'admin';
-                    } else {
-                        // Regular customer email
-                        correctRole = 'customer';
+                    // pcg001@gmail.com = Manzini HQ admin
+                    if (emailLower === 'pcg001@gmail.com') {
+                        autoRole = 'admin';
+                        autoBranch = 'manzini';
+                    }
+                    // pcg002XXX@gmail.com = Branch admin (XXX = 3-letter branch code)
+                    else if (emailLower.match(/^pcg002[a-z]{3}@gmail\.com$/)) {
+                        autoRole = 'admin';
+                        // Extract branch code (e.g., "Mba" from pcg002Mba@gmail.com)
+                        const branchCode = user.email.substring(6, 9).toLowerCase();
+                        if (branchCode === 'mba') {
+                            autoBranch = 'mbabane';
+                        } else {
+                            autoBranch = branchCode; // Use the 3-letter code as branch name
+                        }
+                    }
+                    // pcg-aXXX@gmail.com = Accountant
+                    else if (emailLower.match(/^pcg-a\d+@gmail\.com$/)) {
+                        autoRole = 'accountant';
                     }
                     
-                    // Create or update user data in database
+                    // Create or update user data
                     if (!userData) {
-                        // User doesn't exist - create new
+                        // New user - create with auto-detected role
                         userData = {
                             email: user.email,
-                            role: correctRole,
+                            role: autoRole,
                             name: user.displayName || user.email.split('@')[0],
                             createdAt: new Date().toISOString()
                         };
+                        if (autoBranch) {
+                            userData.branch = autoBranch;
+                        }
                         await database.ref('users/' + user.uid).set(userData);
-                    } else if (userData.role !== correctRole) {
-                        // User exists but role is wrong - update it
-                        userData.role = correctRole;
-                        await database.ref('users/' + user.uid).update({ role: correctRole });
+                        console.log('Created new user:', autoRole, autoBranch || 'no branch');
+                    } else if (!userData.role || userData.role === 'customer') {
+                        // Existing user with no role or customer role - update if they should be admin
+                        if (autoRole !== 'customer') {
+                            const updateData = { role: autoRole };
+                            if (autoBranch && !userData.branch) {
+                                updateData.branch = autoBranch;
+                            }
+                            await database.ref('users/' + user.uid).update(updateData);
+                            userData.role = autoRole;
+                            if (autoBranch) userData.branch = autoBranch;
+                            console.log('Updated user role to:', autoRole, autoBranch || 'no branch');
+                        }
+                    } else {
+                        console.log('Existing user, role:', userData.role, userData.branch || 'no branch');
                     }
                     
                     // Redirect based on role
@@ -141,35 +166,60 @@ async function handleLogin(e) {
         const userDataSnapshot = await database.ref('users/' + user.uid).once('value');
         let userData = userDataSnapshot.val();
         
-        // Determine correct role based on email pattern
-        let correctRole = 'customer';
+        // Determine role and branch based on email pattern
+        let autoRole = 'customer';
+        let autoBranch = null;
         const emailLower = email.toLowerCase();
         
-        if (emailLower.includes('pcg-a')) {
-            // Accountant (pcg-a001@gmail.com, etc.)
-            correctRole = 'accountant';
-        } else if (emailLower.match(/pcg\d+@/)) {
-            // Admin/Supervisor/Cashier (pcg001@gmail.com, pcg002@gmail.com, etc.)
-            correctRole = 'admin';
-        } else {
-            // Regular customer email
-            correctRole = 'customer';
+        // pcg001@gmail.com = Manzini HQ admin
+        if (emailLower === 'pcg001@gmail.com') {
+            autoRole = 'admin';
+            autoBranch = 'manzini';
+        }
+        // pcg002XXX@gmail.com = Branch admin (XXX = 3-letter branch code)
+        else if (emailLower.match(/^pcg002[a-z]{3}@gmail\.com$/)) {
+            autoRole = 'admin';
+            // Extract branch code (e.g., "Mba" from pcg002Mba@gmail.com)
+            const branchCode = email.substring(6, 9).toLowerCase();
+            if (branchCode === 'mba') {
+                autoBranch = 'mbabane';
+            } else {
+                autoBranch = branchCode; // Use the 3-letter code as branch name
+            }
+        }
+        // pcg-aXXX@gmail.com = Accountant
+        else if (emailLower.match(/^pcg-a\d+@gmail\.com$/)) {
+            autoRole = 'accountant';
         }
         
-        // Create or update user data in database
+        // Create or update user data
         if (!userData) {
-            // User doesn't exist - create new
+            // New user - create with auto-detected role
             userData = {
                 email: user.email,
-                role: correctRole,
+                role: autoRole,
                 name: user.displayName || email.split('@')[0],
                 createdAt: new Date().toISOString()
             };
+            if (autoBranch) {
+                userData.branch = autoBranch;
+            }
             await database.ref('users/' + user.uid).set(userData);
-        } else if (userData.role !== correctRole) {
-            // User exists but role is wrong - update it
-            userData.role = correctRole;
-            await database.ref('users/' + user.uid).update({ role: correctRole });
+            console.log('Created new user:', autoRole, autoBranch || 'no branch');
+        } else if (!userData.role || userData.role === 'customer') {
+            // Existing user with no role or customer role - update if they should be admin
+            if (autoRole !== 'customer') {
+                const updateData = { role: autoRole };
+                if (autoBranch && !userData.branch) {
+                    updateData.branch = autoBranch;
+                }
+                await database.ref('users/' + user.uid).update(updateData);
+                userData.role = autoRole;
+                if (autoBranch) userData.branch = autoBranch;
+                console.log('Updated user role to:', autoRole, autoBranch || 'no branch');
+            }
+        } else {
+            console.log('Existing user, role:', userData.role, userData.branch || 'no branch');
         }
         
         // Determine redirect based on role
@@ -244,35 +294,60 @@ async function handleGoogleLogin() {
         const userDataSnapshot = await database.ref('users/' + user.uid).once('value');
         let userData = userDataSnapshot.val();
         
-        // Determine correct role based on email pattern
-        let correctRole = 'customer';
+        // Determine role and branch based on email pattern
+        let autoRole = 'customer';
+        let autoBranch = null;
         const emailLower = user.email.toLowerCase();
         
-        if (emailLower.includes('pcg-a')) {
-            // Accountant (pcg-a001@gmail.com, etc.)
-            correctRole = 'accountant';
-        } else if (emailLower.match(/pcg\d+@/)) {
-            // Admin/Supervisor/Cashier (pcg001@gmail.com, pcg002@gmail.com, etc.)
-            correctRole = 'admin';
-        } else {
-            // Regular customer email
-            correctRole = 'customer';
+        // pcg001@gmail.com = Manzini HQ admin
+        if (emailLower === 'pcg001@gmail.com') {
+            autoRole = 'admin';
+            autoBranch = 'manzini';
+        }
+        // pcg002XXX@gmail.com = Branch admin (XXX = 3-letter branch code)
+        else if (emailLower.match(/^pcg002[a-z]{3}@gmail\.com$/)) {
+            autoRole = 'admin';
+            // Extract branch code (e.g., "Mba" from pcg002Mba@gmail.com)
+            const branchCode = user.email.substring(6, 9).toLowerCase();
+            if (branchCode === 'mba') {
+                autoBranch = 'mbabane';
+            } else {
+                autoBranch = branchCode; // Use the 3-letter code as branch name
+            }
+        }
+        // pcg-aXXX@gmail.com = Accountant
+        else if (emailLower.match(/^pcg-a\d+@gmail\.com$/)) {
+            autoRole = 'accountant';
         }
         
-        // Create or update user data in database
+        // Create or update user data
         if (!userData) {
-            // User doesn't exist - create new
+            // New user - create with auto-detected role
             userData = {
                 email: user.email,
-                role: correctRole,
+                role: autoRole,
                 name: user.displayName || user.email.split('@')[0],
                 createdAt: new Date().toISOString()
             };
+            if (autoBranch) {
+                userData.branch = autoBranch;
+            }
             await database.ref('users/' + user.uid).set(userData);
-        } else if (userData.role !== correctRole) {
-            // User exists but role is wrong - update it
-            userData.role = correctRole;
-            await database.ref('users/' + user.uid).update({ role: correctRole });
+            console.log('Created new user:', autoRole, autoBranch || 'no branch');
+        } else if (!userData.role || userData.role === 'customer') {
+            // Existing user with no role or customer role - update if they should be admin
+            if (autoRole !== 'customer') {
+                const updateData = { role: autoRole };
+                if (autoBranch && !userData.branch) {
+                    updateData.branch = autoBranch;
+                }
+                await database.ref('users/' + user.uid).update(updateData);
+                userData.role = autoRole;
+                if (autoBranch) userData.branch = autoBranch;
+                console.log('Updated user role to:', autoRole, autoBranch || 'no branch');
+            }
+        } else {
+            console.log('Existing user, role:', userData.role, userData.branch || 'no branch');
         }
         
         // Determine redirect based on role

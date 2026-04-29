@@ -1,6 +1,23 @@
 // Manage Orders JavaScript
 let allOrders = [];
 let currentUser = null;
+let userBranch = null;
+let branchCityName = null;
+
+// Get city name from branch code
+function getBranchCityName(branchCode) {
+    const branchMapping = {
+        'manzini': 'Manzini',
+        'mbabane': 'Mbabane',
+        'siteki': 'Siteki',
+        'nhlangano': 'Nhlangano',
+        'piggs': 'Piggs Peak',
+        'mba': 'Mbabane',
+        'dur': 'Durban',
+        'stn': 'Siteki'
+    };
+    return branchMapping[branchCode.toLowerCase()] || branchCode;
+}
 
 // Load orders on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,7 +58,12 @@ function checkAuth() {
             return;
         }
 
+        // Store branch information for filtering
+        userBranch = userData.branch || 'manzini';
+        branchCityName = getBranchCityName(userBranch);
+
         console.log('✅ User has proper role:', userData.role);
+        console.log('🏢 User branch:', userBranch, '| City filter:', branchCityName);
         console.log('📥 Now loading orders...');
         
         // Only load orders after authentication is confirmed
@@ -52,6 +74,14 @@ function checkAuth() {
 // Load all orders from Firebase
 function loadOrders() {
     console.log('🔍 Loading orders from Firebase...');
+    console.log('📍 Current branch:', userBranch, '| City filter:', branchCityName);
+    
+    // Defensive check
+    if (!branchCityName) {
+        console.error('❌ branchCityName is not set! Using default: Manzini');
+        branchCityName = 'Manzini';
+    }
+    
     const ordersRef = database.ref('orders');
     
     ordersRef.on('value', (snapshot) => {
@@ -79,15 +109,39 @@ function loadOrders() {
 
         snapshot.forEach((childSnapshot) => {
             const order = childSnapshot.val();
-            console.log('📝 Order loaded:', childSnapshot.key, order);
-            allOrders.push({
-                id: childSnapshot.key,
-                ...order
-            });
+            const orderId = childSnapshot.key;
+            
+            // Filter by city: if order has no city (old orders or pickup), show to all branches
+            // If order has city, only show to matching branch
+            const orderCity = order.deliveryCity ? order.deliveryCity.toLowerCase().trim() : null;
+            const branchCity = branchCityName ? branchCityName.toLowerCase().trim() : null;
+            
+            if (!orderCity || orderCity === branchCity) {
+                console.log('📝 Order loaded:', orderId, '| City:', order.deliveryCity || 'N/A (shown to all)');
+                allOrders.push({
+                    id: orderId,
+                    ...order
+                });
+            } else {
+                console.log('⊗ Order filtered out:', orderId, '| City:', order.deliveryCity, '!==', branchCityName);
+            }
         });
 
-        console.log(`✅ Total orders loaded: ${allOrders.length}`);
+        console.log(`✅ Total orders loaded for ${branchCityName}: ${allOrders.length}`);
         
+        if (allOrders.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>No Orders for ${branchCityName}</h3>
+                        <p>Orders from ${branchCityName} will appear here when customers place them</p>
+                        <p style="color: #999; font-size: 0.9rem; margin-top: 1rem;">Branch: ${userBranch} | City: ${branchCityName}</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
         // Sort by date (newest first)
         allOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 

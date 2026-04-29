@@ -30,8 +30,11 @@ function checkAuth() {
                 return;
             }
 
-            // Set accountant name
-            document.getElementById('accountantName').textContent = userData.name || 'Accountant';
+            // Set accountant name - accountants see all branches
+            const accountantName = userData.name || userData.fullName || userData.fullname || user.email.split('@')[0];
+            document.getElementById('accountantName').textContent = `${accountantName} - Company Accountant (All Branches)`;
+            
+            console.log('💼 Accountant has access to ALL branches sales data');
             
             // Initialize the page
             setDefaultDates();
