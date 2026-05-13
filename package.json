@@ -1,0 +1,12 @@
+{
+  "name": "pizza-club-grill-desktop",
+  "version": "1.0.0",
+  "description": "The Pizza Club and Grill - Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
