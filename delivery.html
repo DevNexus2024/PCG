@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - The Pizza Club and Grill</title>
+    <!-- Desktop Mode Detection (Windows GUI Style) -->
+    <script src="js/desktop-mode.js"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -320,9 +322,16 @@
                     <span id="grandTotal">E0.00</span>
                 </div>
             </div>
-            <button class="btn-place-order" onclick="goToPayment()">
+            <!-- Go to Payment button (for delivery orders) -->
+            <button class="btn-place-order" id="btnGoToPayment" onclick="goToPayment()" style="display: none;">
                 <i class="fas fa-credit-card"></i> Go to Payment
             </button>
+            
+            <!-- Show Receipt button (for pickup orders) -->
+            <button class="btn-place-order" id="btnShowReceipt" onclick="generateReceipt()" style="display: block;">
+                <i class="fas fa-file-invoice"></i> Show Receipt (Download PDF)
+            </button>
+            
             <button class="btn-back-to-menu" onclick="window.location.href='menu.html'">
                 <i class="fas fa-arrow-left"></i> Back to Menu
             </button>
@@ -333,6 +342,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <script src="js/firebase.js"></script>
     <script src="js/delivery.js"></script>
 </body>

@@ -225,13 +225,40 @@ function setupPaymentMethodListeners() {
         });
     }
     
-    // Card number formatting
+    // Card number formatting and real-time validation
     const cardNumberInput = document.getElementById('cardNumber');
     if (cardNumberInput) {
         cardNumberInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\s/g, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
             e.target.value = formattedValue;
+            
+            // Real-time validation feedback (only if 13+ digits entered)
+            const cleanNumber = value.replace(/\D/g, '');
+            if (cleanNumber.length >= 13) {
+                const isValid = validateCardNumberLuhn(cleanNumber);
+                const cardType = detectCardType(cleanNumber);
+                
+                if (isValid && cardType !== 'Unknown') {
+                    e.target.style.borderColor = '#4CAF50';
+                    e.target.style.backgroundColor = '#f1f8f4';
+                } else {
+                    e.target.style.borderColor = '#f44336';
+                    e.target.style.backgroundColor = '#fff5f5';
+                }
+            } else {
+                e.target.style.borderColor = '';
+                e.target.style.backgroundColor = '';
+            }
+        });
+        
+        // Show card type icon
+        cardNumberInput.addEventListener('blur', function(e) {
+            const cleanNumber = e.target.value.replace(/\s/g, '');
+            if (cleanNumber.length >= 13) {
+                const cardType = detectCardType(cleanNumber);
+                console.log('Card type detected:', cardType);
+            }
         });
     }
     
@@ -353,6 +380,42 @@ async function processPayment() {
             alert('Please enter a valid card number (13-19 digits)');
             return;
         }
+        
+        // ✅ NEW: Validate card number using Luhn algorithm (checksum validation)
+        if (!validateCardNumberLuhn(cardNumber)) {
+            alert('❌ Invalid card number. Please check your card number and try again.\n\nThe card number you entered failed validation. Make sure you entered it correctly.');
+            return;
+        }
+        
+        // ✅ NEW: Detect and validate card type
+        const cardType = detectCardType(cardNumber);
+        if (cardType === 'Unknown') {
+            alert('❌ Card type not recognized. We accept Visa, Mastercard, American Express, and Discover cards.\n\nPlease use a valid card from a major card network.');
+            return;
+        }
+        
+        // ✅ NEW: Block known test/fake card numbers (common test patterns)
+        const testCardPatterns = [
+            /^4111111111111111$/, // Visa test card
+            /^4242424242424242$/, // Stripe test card
+            /^5555555555554444$/, // Mastercard test card
+            /^5105105105105100$/, // Mastercard test card
+            /^378282246310005$/,  // Amex test card
+            /^371449635398431$/,  // Amex test card
+            /^6011111111111117$/, // Discover test card
+            /^3530111333300000$/, // JCB test card
+            /^0{13,19}$/,         // All zeros
+            /^1{13,19}$/,         // All ones
+            /^(1234|4567|9876)/   // Sequential patterns
+        ];
+        
+        const isTestCard = testCardPatterns.some(pattern => pattern.test(cardNumber));
+        if (isTestCard) {
+            alert('❌ Test card numbers are not accepted.\n\nPlease use a real, valid credit or debit card to complete your order.');
+            return;
+        }
+        
+        console.log(`✅ Card validated: ${cardType} ending in ${cardNumber.slice(-4)}`);
         
         // Validate expiry date (MM/YY format)
         if (!expiryDate || !/^\d{2}\/\d{2}$/.test(expiryDate)) {

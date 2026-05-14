@@ -271,7 +271,7 @@ async function loadPaymentMethods() {
 
                 if (paymentMethod.includes('card') || paymentMethod.includes('credit') || paymentMethod.includes('debit')) {
                     cardPayments += amount;
-                } else if (paymentMethod.includes('mobile') || paymentMethod.includes('wallet') || paymentMethod.includes('online')) {
+                } else if (paymentMethod.includes('mobile') || paymentMethod.includes('mtn') || paymentMethod.includes('wallet') || paymentMethod.includes('online')) {
                     mobilePayments += amount;
                 } else {
                     cashPayments += amount;

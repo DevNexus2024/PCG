@@ -25,8 +25,8 @@ if not exist "%INDEX_FILE%" (
 echo Website Location: %WEBSITE_DIR%
 echo.
 
-REM Convert to file:/// URL
-set "FILE_URL=file:///%INDEX_FILE:\=/%"
+REM Convert to file:/// URL and add desktop mode parameter
+set "FILE_URL=file:///%INDEX_FILE:\=/%?desktop=true"
 
 REM Try Chrome first
 set "CHROME_PATH=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
