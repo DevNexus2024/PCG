@@ -74,7 +74,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - serve from cache with network timeout for mobile data
 self.addEventListener('fetch', (event) => {
     // Skip non-GET requests
     if (event.request.method !== 'GET') {
@@ -88,47 +88,57 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // For CDN resources (Font Awesome, etc), use cache-first with longer timeout
+    if (event.request.url.includes('cdnjs.cloudflare.com') ||
+        event.request.url.includes('gstatic.com')) {
+        event.respondWith(
+            caches.match(event.request)
+                .then((cachedResponse) => {
+                    if (cachedResponse) {
+                        return cachedResponse;
+                    }
+                    // If not cached, fetch with timeout
+                    return fetchWithTimeout(event.request, 5000);
+                })
+        );
+        return;
+    }
+
+    // For app resources, use stale-while-revalidate for speed
     event.respondWith(
         caches.match(event.request)
             .then((cachedResponse) => {
-                if (cachedResponse) {
-                    // Return cached response and update cache in background
-                    fetchAndCache(event.request);
-                    return cachedResponse;
-                }
+                // Always return cache immediately if available
+                const fetchPromise = fetchWithTimeout(event.request, 3000)
+                    .then((response) => {
+                        // Update cache in background
+                        if (response && response.status === 200) {
+                            const responseToCache = response.clone();
+                            caches.open(RUNTIME_CACHE).then((cache) => {
+                                cache.put(event.request, responseToCache);
+                            });
+                        }
+                        return response;
+                    })
+                    .catch(() => cachedResponse || caches.match('/index.html'));
 
-                // Not in cache, fetch from network
-                return fetchAndCache(event.request);
-            })
-            .catch((error) => {
-                console.error('❌ Fetch failed:', error);
-                
-                // Return offline page if available
-                return caches.match('/index.html');
+                // Return cached response immediately, or wait for network
+                return cachedResponse || fetchPromise;
             })
     );
 });
 
-// Helper function to fetch and cache
-function fetchAndCache(request) {
-    return fetch(request)
-        .then((response) => {
-            // Check if valid response
-            if (!response || response.status !== 200 || response.type === 'error') {
-                return response;
-            }
-
-            // Clone the response
-            const responseToCache = response.clone();
-
-            // Cache the response
-            caches.open(RUNTIME_CACHE)
-                .then((cache) => {
-                    cache.put(request, responseToCache);
-                });
-
-            return response;
-        });
+// Fetch with timeout - better for slow mobile connections
+function fetchWithTimeout(request, timeout = 3000) {
+    return Promise.race([
+        fetch(request),
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Network timeout')), timeout)
+        )
+    ]).catch((error) => {
+        console.warn('⚠️ Fetch timeout or failed:', request.url);
+        throw error;
+    });
 }
 
 // Handle messages from clients
