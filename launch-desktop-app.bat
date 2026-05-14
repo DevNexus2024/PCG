@@ -12,11 +12,11 @@ echo.
 
 REM Get the current directory
 set "WEBSITE_DIR=%~dp0"
-set "INDEX_FILE=%WEBSITE_DIR%index.html"
+set "DESKTOP_LAUNCHER=%WEBSITE_DIR%desktop-launcher.html"
 
-REM Check if index.html exists
-if not exist "%INDEX_FILE%" (
-    echo ERROR: index.html not found!
+REM Check if desktop launcher exists
+if not exist "%DESKTOP_LAUNCHER%" (
+    echo ERROR: desktop-launcher.html not found!
     echo Please make sure this file is in the same folder as your website.
     pause
     exit /b 1
@@ -25,8 +25,8 @@ if not exist "%INDEX_FILE%" (
 echo Website Location: %WEBSITE_DIR%
 echo.
 
-REM Convert to file:/// URL and add desktop mode parameter
-set "FILE_URL=file:///%INDEX_FILE:\=/%?desktop=true"
+REM Convert to file:/// URL for desktop launcher
+set "FILE_URL=file:///%DESKTOP_LAUNCHER:\=/%"
 
 REM Try Chrome first
 set "CHROME_PATH=%ProgramFiles%\Google\Chrome\Application\chrome.exe"

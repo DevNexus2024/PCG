@@ -7,33 +7,19 @@
     
     // Check if running in desktop mode
     function isDesktopMode() {
-        // Check URL parameter
+        // Check URL parameter (set by desktop-launcher.html)
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('desktop') === 'true') {
             return true;
         }
         
-        // Check if launched with --app flag (window will have minimal chrome)
-        // In app mode, window.chrome exists but toolbar is hidden
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            return true;
-        }
-        
-        // Check localStorage flag (persistent across navigation)
-        if (localStorage.getItem('desktopMode') === 'true') {
+        // Check sessionStorage flag (set by desktop-launcher.html)
+        // sessionStorage is isolated per window, won't affect PWA
+        if (sessionStorage.getItem('desktopApp') === 'true') {
             return true;
         }
         
         return false;
-    }
-    
-    // Set desktop mode flag in localStorage for persistence
-    function setDesktopMode() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('desktop') === 'true') {
-            localStorage.setItem('desktopMode', 'true');
-            console.log('🖥️ Desktop mode activated');
-        }
     }
     
     // Load Windows GUI CSS for desktop mode
@@ -48,24 +34,60 @@
         document.body.classList.add('desktop-mode');
         document.body.classList.add('windows-gui');
         
+        // Maintain desktop mode during navigation
+        addDesktopParamToLinks();
+        
         console.log('✅ Windows GUI style loaded for desktop app');
+    }
+    
+    // Add ?desktop=true parameter to all internal links
+    function addDesktopParamToLinks() {
+        const processLinks = () => {
+            document.querySelectorAll('a[href]').forEach(link => {
+                const href = link.getAttribute('href');
+                
+                // Only process relative links (not external, not anchors, not javascript:)
+                if (href && 
+                    !href.startsWith('http') && 
+                    !href.startsWith('//') && 
+                    !href.startsWith('#') && 
+                    !href.startsWith('javascript:') &&
+                    !href.includes('?desktop=true') &&
+                    !href.includes('&desktop=true')) {
+                    
+                    // Set sessionStorage on link click to maintain desktop mode
+                    link.addEventListener('click', function() {
+                        sessionStorage.setItem('desktopApp', 'true');
+                    });
+                    
+                    // Add ?desktop=true parameter to URL
+                    const separator = href.includes('?') ? '&' : '?';
+                    link.setAttribute('href', href + separator + 'desktop=true');
+                }
+            });
+        };
+        
+        // Process links now and whenever DOM changes
+        processLinks();
+        
+        // Use MutationObserver to catch dynamically added links
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(processLinks);
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
     }
     
     // Initialize on page load
     function init() {
-        // Set desktop mode flag first
-        setDesktopMode();
-        
-        // Check if in desktop mode
+        // Check if in desktop mode and load Windows GUI
         if (isDesktopMode()) {
-            console.log('🖥️ Running in Desktop Mode');
-            console.log('🎨 Applying Windows GUI styling...');
             loadWindowsGUIStyle();
             
             // Add Windows app title attribute
             document.title = document.title + ' - Desktop App';
+            console.log('🖥️ Desktop mode: Windows GUI activated');
         } else {
-            console.log('🌐 Running in Web Mode');
+            console.log('🌐 Normal mode: Website styling active');
         }
     }
     
