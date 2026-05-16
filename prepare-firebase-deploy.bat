@@ -33,17 +33,33 @@ echo.
 echo ✓ Files copied to 'firebase-deploy' folder
 echo.
 echo ========================================
-echo NEXT STEPS:
+echo DEPLOYMENT OPTIONS:
 echo ========================================
-echo 1. Go to: https://console.firebase.google.com
-echo 2. Select your project
-echo 3. Click "Hosting" in the left sidebar
-echo 4. Click "Get Started" or "Add another site"
-echo 5. Choose "Deploy without Firebase CLI"
-echo 6. Drag and drop the 'firebase-deploy' folder
 echo.
-echo The 'firebase-deploy' folder is ready!
-echo Location: %cd%\firebase-deploy
+echo [RECOMMENDED] Option 1: Manual Upload
+echo ------------------------------------
+echo 1. Press any key to open Firebase Console
+echo 2. Go to Hosting section
+echo 3. Drag and drop the 'firebase-deploy' folder
+echo.
+echo Option 2: Use Firebase CLI
+echo -------------------------
+echo Run: firebase deploy --only hosting
+echo.
 echo ========================================
+echo.
+pause
+
+REM Open Firebase Console
+start https://console.firebase.google.com/project/food-ordering-website-2025/hosting
+
+REM Open the deployment folder
+start explorer "%cd%\firebase-deploy"
+
+echo.
+echo ✓ Firebase Console opened in browser
+echo ✓ Deployment folder opened in Explorer
+echo.
+echo Drag contents of firebase-deploy folder to Firebase Console!
 echo.
 pause

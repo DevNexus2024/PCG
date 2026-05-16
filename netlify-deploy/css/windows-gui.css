@@ -1,0 +1,529 @@
+/* ============================================
+   WINDOWS GUI STYLE FOR DESKTOP APP ONLY
+   Microsoft Access / Windows Forms Inspired
+   ============================================ */
+
+/* Global Windows Style Overrides */
+body {
+    background: #F0F0F0 !important; /* Classic Windows gray background */
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif !important;
+}
+
+/* Container adjustments for Windows look */
+.container {
+    background: #F0F0F0 !important;
+}
+
+/* Windows-style Panels and Sections */
+.hero,
+.features,
+.checkout-container,
+.auth-container,
+.admin-container,
+.dashboard-container,
+.order-section {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    box-shadow: inset -1px -1px 0px #FFFFFF, 
+                inset 1px 1px 0px #808080,
+                2px 2px 4px rgba(0,0,0,0.2) !important;
+    border-radius: 0 !important; /* Windows forms have sharp corners */
+}
+
+/* Windows Button Styles */
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-success,
+.btn-place-order,
+.btn-back-to-menu,
+.btn-submit,
+input[type="submit"],
+input[type="button"] {
+    background: linear-gradient(to bottom, #FFFFFF 0%, #E5E5E5 100%) !important;
+    border: 1px solid #707070 !important;
+    border-radius: 0 !important;
+    box-shadow: inset -1px -1px 0px #808080, 
+                inset 1px 1px 0px #FFFFFF !important;
+    color: #000000 !important;
+    font-family: "Segoe UI", Tahoma, sans-serif !important;
+    font-weight: 400 !important;
+    padding: 6px 16px !important;
+    text-shadow: none !important;
+    cursor: default !important;
+}
+
+button:hover,
+.btn:hover,
+.btn-primary:hover {
+    background: linear-gradient(to bottom, #E5F3FF 0%, #CCE8FF 100%) !important;
+    border: 1px solid #0078D7 !important;
+}
+
+button:active,
+.btn:active,
+.btn-primary:active {
+    background: linear-gradient(to bottom, #CCE8FF 0%, #E5F3FF 100%) !important;
+    box-shadow: inset 1px 1px 0px #808080, 
+                inset -1px -1px 0px #FFFFFF !important;
+}
+
+/* Primary action buttons (keep color but Windows style) */
+.btn-primary,
+button.btn-place-order {
+    background: linear-gradient(to bottom, #0078D7 0%, #005A9E 100%) !important;
+    color: #FFFFFF !important;
+    border: 1px solid #004275 !important;
+    font-weight: 600 !important;
+}
+
+.btn-primary:hover,
+button.btn-place-order:hover {
+    background: linear-gradient(to bottom, #1684E0 0%, #0066B3 100%) !important;
+}
+
+/* Danger buttons */
+.btn-danger {
+    background: linear-gradient(to bottom, #E81123 0%, #C50F1F 100%) !important;
+    color: #FFFFFF !important;
+    border: 1px solid #A80000 !important;
+}
+
+/* Success buttons */
+.btn-success {
+    background: linear-gradient(to bottom, #107C10 0%, #0E6B0E 100%) !important;
+    color: #FFFFFF !important;
+    border: 1px solid #0A5A0A !important;
+}
+
+/* Windows Input Fields */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    border-radius: 0 !important;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1) !important;
+    padding: 4px 6px !important;
+    font-family: "Segoe UI", Tahoma, sans-serif !important;
+    color: #000000 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border: 1px solid #0078D7 !important;
+    outline: 1px solid #0078D7 !important;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1),
+                0 0 0 2px rgba(0, 120, 215, 0.3) !important;
+}
+
+/* Windows Header/Title Bar Style */
+.navbar,
+.admin-navbar,
+nav {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border-bottom: 1px solid #8C8C8C !important;
+    box-shadow: inset 0 1px 0 #FFFFFF,
+                0 1px 3px rgba(0,0,0,0.2) !important;
+    border-radius: 0 !important;
+}
+
+/* Windows Menu Bar Style */
+.nav-links a,
+.navbar a {
+    color: #000000 !important;
+    font-family: "Segoe UI", Tahoma, sans-serif !important;
+    text-decoration: none !important;
+    padding: 6px 12px !important;
+    border-radius: 0 !important;
+}
+
+.nav-links a:hover,
+.navbar a:hover {
+    background: rgba(0, 120, 215, 0.1) !important;
+    color: #0078D7 !important;
+}
+
+/* Windows Groupbox Style (for form sections) */
+.form-group,
+.checkout-section,
+.order-type-selector {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    border-radius: 0 !important;
+    padding: 12px !important;
+    margin: 8px 0 !important;
+}
+
+/* Windows Label Style */
+label {
+    color: #000000 !important;
+    font-family: "Segoe UI", Tahoma, sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 11pt !important;
+}
+
+/* Windows Table/Grid Style */
+table,
+.menu-grid,
+.order-item,
+.stat-card {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    border-radius: 0 !important;
+}
+
+table th,
+table thead {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border: 1px solid #8C8C8C !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    padding: 6px !important;
+}
+
+table td {
+    border: 1px solid #D4D4D4 !important;
+    padding: 4px 6px !important;
+    background: #FFFFFF !important;
+}
+
+table tr:nth-child(even) {
+    background: #F9F9F9 !important;
+}
+
+table tr:hover {
+    background: #E5F3FF !important;
+}
+
+/* Windows Card Style (for menu items, stats, etc.) */
+.menu-item,
+.card,
+.stat-card {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    border-radius: 0 !important;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.menu-item:hover,
+.card:hover {
+    border: 1px solid #0078D7 !important;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.3) !important;
+}
+
+/* Windows Status Bar Style */
+.footer,
+footer {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border-top: 1px solid #8C8C8C !important;
+    color: #000000 !important;
+    font-family: "Segoe UI", Tahoma, sans-serif !important;
+    padding: 4px 12px !important;
+}
+
+/* Windows Checkbox Style */
+input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    border: 1px solid #8C8C8C !important;
+    background: #FFFFFF !important;
+}
+
+/* Windows Radio Button Style */
+input[type="radio"] {
+    width: 16px !important;
+    height: 16px !important;
+    border: 1px solid #8C8C8C !important;
+}
+
+/* Windows Scrollbar Style */
+::-webkit-scrollbar {
+    width: 17px !important;
+    height: 17px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #F0F0F0 !important;
+    border: 1px solid #D4D4D4 !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border: 1px solid #8C8C8C !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #D1D1D1 0%, #BBBBBB 100%) !important;
+}
+
+::-webkit-scrollbar-button {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border: 1px solid #8C8C8C !important;
+    height: 17px !important;
+    width: 17px !important;
+}
+
+/* Windows Tab Style */
+.tabs,
+.tab-container {
+    background: #F0F0F0 !important;
+    border-bottom: 1px solid #8C8C8C !important;
+}
+
+.tab {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border: 1px solid #8C8C8C !important;
+    border-bottom: none !important;
+    border-radius: 0 !important;
+    padding: 6px 16px !important;
+    color: #000000 !important;
+}
+
+.tab.active {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #FFFFFF !important;
+    margin-bottom: -1px !important;
+}
+
+/* Windows Alert/Modal Style */
+.modal,
+.alert,
+.notification {
+    background: #FFFFFF !important;
+    border: 3px solid #0078D7 !important;
+    border-radius: 0 !important;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.4) !important;
+}
+
+.modal-header {
+    background: linear-gradient(to bottom, #0078D7 0%, #005A9E 100%) !important;
+    color: #FFFFFF !important;
+    padding: 6px 12px !important;
+    font-weight: 600 !important;
+}
+
+/* Windows Disabled State */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+    background: #F0F0F0 !important;
+    color: #8C8C8C !important;
+    border: 1px solid #B8B8B8 !important;
+    cursor: not-allowed !important;
+}
+
+/* Windows Link Style */
+a {
+    color: #0066CC !important;
+    text-decoration: underline !important;
+}
+
+a:hover {
+    color: #0078D7 !important;
+}
+
+/* Windows Panel Header Style */
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Segoe UI", Tahoma, sans-serif !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* Windows Toolbar Style */
+.toolbar,
+.actions {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border: 1px solid #8C8C8C !important;
+    padding: 4px !important;
+}
+
+/* Windows List Style */
+ul, ol {
+    background: #FFFFFF !important;
+}
+
+li {
+    padding: 4px 8px !important;
+}
+
+li:hover {
+    background: #E5F3FF !important;
+}
+
+/* Windows Dropdown Menu Style */
+.dropdown-menu,
+select option {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3) !important;
+    border-radius: 0 !important;
+}
+
+/* Windows Progress Bar Style */
+progress,
+.progress-bar {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    border-radius: 0 !important;
+}
+
+progress::-webkit-progress-bar {
+    background: #FFFFFF !important;
+}
+
+progress::-webkit-progress-value {
+    background: linear-gradient(to bottom, #06B025 0%, #05A01F 100%) !important;
+}
+
+/* Windows Separator/Divider Style */
+hr {
+    border: none !important;
+    border-top: 1px solid #8C8C8C !important;
+    border-bottom: 1px solid #FFFFFF !important;
+    height: 2px !important;
+}
+
+/* Order Type Selector Windows Style */
+.order-type-option {
+    background: linear-gradient(to bottom, #FFFFFF 0%, #E5E5E5 100%) !important;
+    border: 2px solid #8C8C8C !important;
+    border-radius: 0 !important;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.order-type-option.active {
+    background: linear-gradient(to bottom, #E5F3FF 0%, #CCE8FF 100%) !important;
+    border: 2px solid #0078D7 !important;
+    box-shadow: inset 0 0 0 2px #0078D7,
+                2px 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.order-type-option:hover {
+    background: linear-gradient(to bottom, #F5F5F5 0%, #E0E0E0 100%) !important;
+    border: 2px solid #0078D7 !important;
+}
+
+/* Remove all rounded corners (Windows Forms don't have rounded corners) */
+* {
+    border-radius: 0 !important;
+}
+
+/* Windows Focus Rectangle */
+*:focus {
+    outline: 1px dotted #000000 !important;
+    outline-offset: 2px !important;
+}
+
+button:focus,
+.btn:focus {
+    outline: 1px dotted #000000 !important;
+    outline-offset: -4px !important;
+}
+
+/* Windows Menu Item Hover */
+.menu-item-card {
+    transition: all 0.1s ease !important; /* Quick transitions like Windows */
+}
+
+/* Cart Badge Windows Style */
+.cart-badge {
+    background: #E81123 !important;
+    border: 1px solid #A80000 !important;
+    border-radius: 2px !important;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+/* Windows Tooltip Style */
+.tooltip {
+    background: #FFFFCC !important;
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+    border-radius: 0 !important;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.4) !important;
+    font-family: "Segoe UI", Tahoma, sans-serif !important;
+}
+
+/* Chart containers Windows style */
+canvas {
+    border: 1px solid #8C8C8C !important;
+    background: #FFFFFF !important;
+}
+
+/* Admin Dashboard Cards */
+.dashboard-card {
+    background: #FFFFFF !important;
+    border: 1px solid #8C8C8C !important;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+/* Windows Icon Button Style */
+.icon-button,
+button i,
+.btn i {
+    margin-right: 4px !important;
+}
+
+/* Badge Windows Style */
+.badge {
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%) !important;
+    border: 1px solid #8C8C8C !important;
+    color: #000000 !important;
+    border-radius: 2px !important;
+    padding: 2px 6px !important;
+    font-weight: 600 !important;
+}
+
+.badge-success {
+    background: linear-gradient(to bottom, #107C10 0%, #0E6B0E 100%) !important;
+    color: #FFFFFF !important;
+}
+
+.badge-danger {
+    background: linear-gradient(to bottom, #E81123 0%, #C50F1F 100%) !important;
+    color: #FFFFFF !important;
+}
+
+.badge-warning {
+    background: linear-gradient(to bottom, #FFB900 0%, #FFA500 100%) !important;
+    color: #000000 !important;
+}
+
+/* Windows Spinner/Loader Style */
+.spinner,
+.loader {
+    border: 3px solid #F0F0F0 !important;
+    border-top: 3px solid #0078D7 !important;
+    border-radius: 50% !important; /* Only spinners can be round */
+}
+
+/* Text selection Windows style */
+::selection {
+    background: #0078D7 !important;
+    color: #FFFFFF !important;
+}
+
+/* Desktop App Title Bar Simulation */
+body::before {
+    content: "The Pizza Club and Grill - Desktop Application";
+    display: block;
+    background: linear-gradient(to bottom, #E5E5E5 0%, #D1D1D1 100%);
+    border-bottom: 1px solid #8C8C8C;
+    padding: 4px 12px;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 11pt;
+    color: #000000;
+    font-weight: 400;
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}

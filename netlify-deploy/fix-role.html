@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix User Role - The Pizza Club and Grill</title>
+    <!-- Desktop Mode Detection (Windows GUI Style) -->
+    <script src="js/desktop-mode.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #D90429;
+            margin-bottom: 1rem;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #2196F3;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background: #D90429;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #b8032a;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fix User Role</h1>
+        
+        <div class="info">
+            <strong>Instructions:</strong><br>
+            1. Enter the email address: <code>pcg002Mba@gmail.com</code> (Mbabane Branch)<br>
+            2. Select the role: <strong>admin</strong> or <strong>supervisor</strong><br>
+            3. Select the branch: <strong>Mbabane</strong><br>
+            4. Click "Update Role"<br>
+            5. After successful update, try logging in again.<br><br>
+            <strong>Branches:</strong><br>
+            • <code>pcg001@gmail.com</code> - Manzini (Headquarters)<br>
+            • <code>pcg002Mba@gmail.com</code> - Mbabane Branch
+        </div>
+
+        <form id="roleForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" value="pcg002Mba@gmail.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select id="role" required>
+                    <option value="">Select a role</option>
+                    <option value="admin" selected>Admin</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="cashier">Cashier</option>
+                    <option value="accountant">Accountant</option>
+                    <option value="customer">Customer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="branch">Branch Location</label>
+                <select id="branch" required>
+                    <option value="">Select a branch</option>
+                    <option value="manzini">Manzini (Headquarters)</option>
+                    <option value="mbabane" selected>Mbabane</option>
+                </select>
+            </div>
+
+            <button type="submit">Update Role</button>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase.js"></script>
+
+    <script>
+        // Check authentication status
+        let currentUser = null;
+        
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            if (!user) {
+                document.getElementById('message').className = 'message error';
+                document.getElementById('message').textContent = '⚠️ You must be logged in to use this tool. Please login first at login.html';
+                document.getElementById('message').style.display = 'block';
+                document.querySelector('button[type="submit"]').disabled = true;
+            } else {
+                console.log('Authenticated as:', user.email);
+            }
+        });
+        
+        document.getElementById('roleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                alert('Please login first. Redirecting to login page...');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const email = document.getElementById('email').value.trim();
+            const role = document.getElementById('role').value;
+            const branch = document.getElementById('branch').value;
+            const messageDiv = document.getElementById('message');
+            
+            // Show loading message
+            messageDiv.className = 'message';
+            messageDiv.style.background = '#fff3cd';
+            messageDiv.style.color = '#856404';
+            messageDiv.style.border = '1px solid #ffeaa7';
+            messageDiv.textContent = '⏳ Updating user role...';
+            messageDiv.style.display = 'block';
+            
+            try {
+                // Search for user by email
+                console.log('Searching for user with email:', email);
+                const usersRef = database.ref('users');
+                const snapshot = await usersRef.orderByChild('email').equalTo(email).once('value');
+                
+                if (!snapshot.exists()) {
+                    throw new Error('User not found with this email address. Please make sure the user has signed up first.');
+                }
+                
+                // Update the user's role and branch
+                let updated = false;
+                let userName = '';
+                snapshot.forEach((childSnapshot) => {
+                    const userId = childSnapshot.key;
+                    const userData = childSnapshot.val();
+                    userName = userData.fullName || userData.fullname || email;
+                    
+                    console.log('Updating user:', userId);
+                    database.ref('users/' + userId).update({
+                        role: role,
+                        branch: branch,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    updated = true;
+                });
+                
+                if (updated) {
+                    const branchName = branch === 'manzini' ? 'Manzini (Headquarters)' : 'Mbabane';
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = `✓ Role updated successfully!\n\nUser: ${userName} (${email})\nRole: ${role.toUpperCase()}\nBranch: ${branchName}\n\nYou can now login with this account at ${window.location.origin}/admin-dashboard.html`;
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.whiteSpace = 'pre-line';
+                } else {
+                    throw new Error('Failed to update role.');
+                }
+                
+            } catch (error) {
+                console.error('Error updating role:', error);
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '✗ Error: ' + error.message;
+                messageDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
