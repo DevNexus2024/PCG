@@ -56,8 +56,9 @@ window.selectOrderType = function(type) {
     });
     document.querySelector(`[data-type="${type}"]`).classList.add('active');
     
-    // Show/hide delivery fields
+    // Show/hide delivery/pickup fields
     const deliveryFields = document.getElementById('deliveryFields');
+    const pickupFields = document.getElementById('pickupFields');
     const deliveryFeeRow = document.getElementById('deliveryFeeRow');
     
     // Toggle buttons based on order type
@@ -66,20 +67,24 @@ window.selectOrderType = function(type) {
     
     if (type === 'delivery') {
         deliveryFields.classList.add('active');
+        pickupFields.classList.add('hidden');
         deliveryFeeRow.style.display = 'flex';
         // Make delivery fields required
         document.getElementById('deliveryAddress').required = true;
         document.getElementById('deliveryCity').required = true;
+        document.getElementById('pickupCity').required = false;
         
         // Show payment button, hide receipt button
         btnGoToPayment.style.display = 'block';
         btnShowReceipt.style.display = 'none';
     } else {
         deliveryFields.classList.remove('active');
+        pickupFields.classList.remove('hidden');
         deliveryFeeRow.style.display = 'none';
-        // Remove required from delivery fields
+        // Remove required from delivery fields, add to pickup
         document.getElementById('deliveryAddress').required = false;
         document.getElementById('deliveryCity').required = false;
+        document.getElementById('pickupCity').required = true;
         
         // Show receipt button, hide payment button
         btnGoToPayment.style.display = 'none';
@@ -144,6 +149,7 @@ window.goToPayment = function() {
     let deliveryAddress = '';
     let deliveryCity = '';
     let deliveryZone = '';
+    let pickupCity = '';
     
     if (orderType === 'delivery') {
         deliveryAddress = document.getElementById('deliveryAddress').value.trim();
@@ -152,6 +158,13 @@ window.goToPayment = function() {
         
         if (!deliveryAddress || !deliveryCity) {
             alert('Please fill in delivery address and city');
+            return;
+        }
+    } else if (orderType === 'pickup') {
+        pickupCity = document.getElementById('pickupCity').value.trim();
+        
+        if (!pickupCity) {
+            alert('Please select a pickup branch');
             return;
         }
     }
@@ -174,6 +187,9 @@ window.goToPayment = function() {
             address: deliveryAddress,
             city: deliveryCity,
             zone: deliveryZone
+        } : null,
+        pickupInfo: orderType === 'pickup' ? {
+            branch: pickupCity
         } : null,
         items: cart,
         pricing: {
@@ -214,6 +230,14 @@ window.generateReceipt = async function() {
         return;
     }
     
+    // Get pickup city
+    const pickupCity = document.getElementById('pickupCity').value.trim();
+    
+    if (!pickupCity) {
+        alert('Please select a pickup branch');
+        return;
+    }
+    
     console.log('✅ Form validated');
     
     // Calculate totals
@@ -222,6 +246,7 @@ window.generateReceipt = async function() {
     const total = subtotal + deliveryFee;
     
     console.log('💰 Order total:', total);
+    console.log('📍 Pickup branch:', pickupCity);
     
     try {
         // Generate order number
@@ -237,7 +262,7 @@ window.generateReceipt = async function() {
             customerEmail: customerEmail,
             userId: currentUser ? currentUser.uid : null,
             deliveryAddress: null,
-            deliveryCity: null,
+            deliveryCity: pickupCity,
             deliveryZone: null,
             specialInstructions: orderNotes,
             items: cart,

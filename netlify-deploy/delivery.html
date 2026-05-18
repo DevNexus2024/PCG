@@ -117,6 +117,14 @@
             display: block;
         }
 
+        .pickup-fields {
+            display: block;
+        }
+
+        .pickup-fields.hidden {
+            display: none;
+        }
+
         .order-summary {
             position: sticky;
             top: 100px;
@@ -278,6 +286,21 @@
                 <div class="form-group">
                     <label for="customerEmail"><i class="fas fa-envelope"></i> Email</label>
                     <input type="email" id="customerEmail">
+                </div>
+
+                <!-- Pickup City Field (Shown for pickup orders) -->
+                <div class="pickup-fields" id="pickupFields">
+                    <div class="form-group">
+                        <label for="pickupCity"><i class="fas fa-city"></i> Pickup Branch *</label>
+                        <select id="pickupCity" required>
+                            <option value="">Select Pickup Branch</option>
+                            <option value="Mbabane">Mbabane Branch</option>
+                            <option value="Manzini">Manzini Branch</option>
+                            <option value="Siteki">Siteki Branch</option>
+                            <option value="Nhlangano">Nhlangano Branch</option>
+                            <option value="Piggs Peak">Piggs Peak Branch</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Delivery Fields (Hidden by default) -->
